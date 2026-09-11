@@ -1,0 +1,3 @@
+thirdparty/**/* linguist-detectable=false
+src/audio/samples/**/* linguist-detectable=false
+src/**/*.h linguist-language=C++
