@@ -7,8 +7,10 @@
 #include <cmath>
 #include "rlgl.h"
 
-//#define DO_CAPTURE 1
+//#define FRAMERATE 60.0f
+#define CAPTURE_FRAMERATE 240.0f
 
+//#define DO_CAPTURE 1
 #ifdef DO_CAPTURE
 #include <cstdio>
 #include <filesystem>
@@ -132,9 +134,14 @@ int main()
     constexpr float distance = 25.0f;
     constexpr float fov = 45.0f;
 
+#ifndef FRAMERATE
+    SetConfigFlags(FLAG_VSYNC_HINT);
+#endif
     InitWindow(screenWidth, screenHeight, "Xbox Blob");
     rlDisableBackfaceCulling();
-//  SetTargetFPS(60);
+#ifdef FRAMERATE
+    SetTargetFPS(FRAMERATE);
+#endif
 
     Camera3D camera{
         { 0.0f, distance, -6.0f },
@@ -172,11 +179,11 @@ int main()
 #else
 int main()
 {
-    constexpr int screenWidth = 960;
-    constexpr int screenHeight = 720;
+    constexpr int screenWidth = 1000;
+    constexpr int screenHeight = 1000;
     constexpr float distance = 25.0f;
     constexpr float fov = 45.0f;
-    constexpr float fixedDt = 1.0f / 60.0f;
+    constexpr float fixedDt = 1.0f / CAPTURE_FRAMERATE;
 
     InitWindow(screenWidth, screenHeight, "Xbox Blob");
     std::filesystem::create_directories("frames");
@@ -226,7 +233,7 @@ int main()
         snprintf(
             filename,
             sizeof(filename),
-            "frames/frame_%06d.png",
+            "frames/frame_%06d.tga",
             frameNumber++
         );
 
