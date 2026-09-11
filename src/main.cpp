@@ -7,9 +7,21 @@
 #include <cmath>
 #include "rlgl.h"
 
+//#define DO_CAPTURE 1
+
+#ifdef DO_CAPTURE
+#include <cstdio>
+#include <filesystem>
+#endif
+
 class IntensityDriver
 {
 public:
+    IntensityDriver()
+    {
+        Init();
+    }
+
     void Init()
     {
         rng.Init();
@@ -112,28 +124,28 @@ private:
     }
 };
 
+#ifndef DO_CAPTURE
 int main()
 {
-    const int screenWidth = 960;
-    const int screenHeight = 720;
-    constexpr float zoomAmt = 25.0f;
+    constexpr int screenWidth = 960;
+    constexpr int screenHeight = 720;
+    constexpr float distance = 25.0f;
+    constexpr float fov = 45.0f;
 
     InitWindow(screenWidth, screenHeight, "Xbox Blob");
     rlDisableBackfaceCulling();
 //  SetTargetFPS(60);
-    
 
-    Camera3D camera{};
-    camera.position = { 0.0f, zoomAmt, -6.0f };
-    camera.target = { 0.0f, 0.0f, 0.0f };
-    camera.up = { 0.0f, 0.0f, 1.0f };
-    camera.fovy = 45.0f;
-    camera.projection = CAMERA_PERSPECTIVE;
+    Camera3D camera{
+        { 0.0f, distance, -6.0f },
+        { 0.0f, 0.0f, 0.0f },
+        { 0.0f, 0.0f, 1.0f },
+        fov,
+        CAMERA_PERSPECTIVE
+    };
 
     Blob blob;
-
     IntensityDriver driver;
-    driver.Init();
 
     while (!WindowShouldClose())
     {
@@ -157,3 +169,72 @@ int main()
     CloseWindow();
     return 0;
 }
+#else
+int main()
+{
+    constexpr int screenWidth = 960;
+    constexpr int screenHeight = 720;
+    constexpr float distance = 25.0f;
+    constexpr float fov = 45.0f;
+    constexpr float fixedDt = 1.0f / 60.0f;
+
+    InitWindow(screenWidth, screenHeight, "Xbox Blob");
+    std::filesystem::create_directories("frames");
+    rlDisableBackfaceCulling();
+
+    Camera3D camera{
+        { 0.0f, distance, -6.0f },
+        { 0.0f, 0.0f, 0.0f },
+        { 0.0f, 0.0f, 1.0f },
+        fov,
+        CAMERA_PERSPECTIVE
+    };
+
+    Blob blob;
+    IntensityDriver driver;
+    driver.loop = false;
+
+    int frameNumber = 0;
+
+    while (!WindowShouldClose())
+    {
+        if (!driver.Advance(fixedDt, blob))
+            break;
+
+        BeginDrawing();
+
+        ClearBackground(BLACK);
+
+        if (driver.GetElapsedTime() >= BLOB_STATIC_END_TIME)
+        {
+            BeginMode3D(camera);
+
+            blob.Render(
+                camera,
+                driver.GetPulseIntensity(),
+                driver.GetIntensity(),
+                driver.GetBaseIntensity(),
+                driver.GetElapsedTime()
+            );
+
+            EndMode3D();
+        }
+
+        EndDrawing();
+
+        char filename[256];
+        snprintf(
+            filename,
+            sizeof(filename),
+            "frames/frame_%06d.png",
+            frameNumber++
+        );
+
+        TakeScreenshot(filename);
+    }
+
+    CloseWindow();
+
+    return 0;
+}
+#endif
