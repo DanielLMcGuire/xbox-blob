@@ -98,6 +98,142 @@ void SOSSequencer::stepTrack(int ch) {
     }
 
     ushort op = t.read();
+
+#if defined(__GNUC__) || defined(__clang__)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc99-designator"
+#pragma clang diagnostic ignored "-Wc99-extensions"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+#endif
+
+    static const void* const dispatchTable[] = {
+        [F_REST]      = &&lbl_REST,
+        [F_NOTE]      = &&lbl_NOTE,
+        [F_SLUR]      = &&lbl_SLUR,
+        [F_RING]      = &&lbl_RING,
+        [F_FILTERSET] = &&lbl_FILTERSET,
+        [F_FILTERINC] = &&lbl_FILTERINC,
+        [F_PATCH]     = &&lbl_PATCH,
+        [F_VOLUME]    = &&lbl_VOLUME,
+        [F_XPOSE]     = &&lbl_XPOSE,
+        [F_LOOP]      = &&lbl_LOOP,
+        [F_ENDLOOP]   = &&lbl_ENDLOOP,
+        [F_END]       = &&lbl_END,
+    };
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+
+    constexpr size_t tableSize = sizeof(dispatchTable) / sizeof(dispatchTable[0]);
+
+    if (op >= tableSize || !dispatchTable[op]) {
+        goto lbl_DEFAULT;
+    }
+
+    goto *dispatchTable[op];
+
+lbl_REST:
+    if (t.canRead(1)) { voices[ch].noteOff(); t.timer += t.read(); }
+    return;
+
+lbl_NOTE:
+    if (t.canRead(2)) {
+        uint8_t p = (uint8_t)t.read();
+        ushort dur = t.read();
+        t.pitch = (p << 8) + t.transpose;
+        voices[ch].noteOn(t.pitch);
+        t.timer += dur;
+    }
+    return;
+
+lbl_SLUR:
+    if (t.canRead(2)) {
+        uint8_t p = (uint8_t)t.read();
+        ushort dur = t.read();
+        t.pitch = (p << 8) + t.transpose;
+        voices[ch].setPitch(t.pitch);
+        t.timer += dur;
+    }
+    return;
+
+lbl_RING:
+    if (t.canRead(1)) t.timer += t.read();
+    return;
+
+lbl_FILTERSET:
+    if (t.canRead(2)) {
+        t.filterCutoff = (int16_t)t.read();
+        t.filterRes = t.read();
+        voices[ch].setFilter(t.filterCutoff, t.filterRes);
+    }
+    return;
+
+lbl_FILTERINC:
+    if (t.canRead(2)) {
+        t.filterCutoff += (int16_t)t.read();
+        t.filterRes = t.read();
+        voices[ch].setFilter(t.filterCutoff, t.filterRes);
+    }
+    return;
+
+lbl_PATCH:
+    if (t.canRead(1)) {
+        ushort pat = t.read();
+        if (pat < 11) {
+            t.patchIdx = pat;
+            t.volume = 0;
+            voices[ch].setPatch(&patches[pat], sampleRate);
+            voices[ch].setVolume(t.volume);
+        }
+    }
+    return;
+
+lbl_VOLUME:
+    if (t.canRead(1)) {
+        t.volume += (int16_t)t.read();
+        voices[ch].setVolume(t.volume);
+    }
+    return;
+
+lbl_XPOSE:
+    if (t.canRead(1)) t.transpose += (int16_t)t.read();
+    return;
+
+lbl_LOOP:
+    if (t.canRead(1)) {
+        ushort count = t.read();
+        if (t.loopDepth < MAX_LOOP_DEPTH) {
+            t.loopStack[t.loopDepth++] = { count, t.pc };
+        }
+    }
+    return;
+
+lbl_ENDLOOP:
+    if (t.loopDepth > 0) {
+        if (--t.loopStack[t.loopDepth - 1].count > 0) {
+            t.pc = t.loopStack[t.loopDepth - 1].returnIndex;
+        } else {
+            t.loopDepth--;
+        }
+    }
+    return;
+
+lbl_END:
+    t.active = false;
+    voices[ch].noteOff();
+    return;
+
+lbl_DEFAULT:
+    t.active = false;
+    return;
+
+#else
     switch (op) {
     case F_REST:
         if (t.canRead(1)) { voices[ch].noteOff(); t.timer += t.read(); }
@@ -182,6 +318,7 @@ void SOSSequencer::stepTrack(int ch) {
         t.active = false;
         break;
     }
+#endif
 }
 
 void SOSSequencer::tick() {
