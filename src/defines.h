@@ -1,0 +1,27 @@
+#pragma once
+
+constexpr float DEMO_TOTAL_TIME = 8.0f;
+
+constexpr float BLOB_STATIC_END_TIME = 0.6f;
+constexpr float BLOB_ZERO_INTENSE_END_TIME = BLOB_STATIC_END_TIME + 0.5f;
+constexpr float BLOB_BASE_INTENSITY = 0.3f;
+
+constexpr float FINAL_HOLD_TIME = 2.0f;
+constexpr float FINISH_TRANSITION_TIME = 0.8f;
+constexpr float FINISH_START_TIME = DEMO_TOTAL_TIME - FINAL_HOLD_TIME - FINISH_TRANSITION_TIME;
+constexpr float FINISH_STOP_TIME = DEMO_TOTAL_TIME - FINAL_HOLD_TIME;
+
+constexpr float MAX_INTENSITY_TIME = FINISH_START_TIME;
+constexpr float MAX_INTENSITY_DELTA = MAX_INTENSITY_TIME - BLOB_ZERO_INTENSE_END_TIME;
+constexpr float OO_MAX_INTENSITY_DELTA = 1.0f / MAX_INTENSITY_DELTA;
+constexpr float DEMO_START_INTENSITY = 0.0f;
+
+constexpr float BLOB_PULSE_START = BLOB_STATIC_END_TIME;
+constexpr float BLOB_PULSE_END = FINISH_STOP_TIME - 0.4f;
+constexpr float BLOB_PULSE_ELAPSED = BLOB_PULSE_END - BLOB_PULSE_START;
+
+#if defined(_MSC_VER) && defined(_M_IX86)
+    #define USE_ASM_MSVC_X86
+#elif defined(__i386__) || defined(__x86_64__)
+    #define USE_ASM_GCC_X86
+#endif
