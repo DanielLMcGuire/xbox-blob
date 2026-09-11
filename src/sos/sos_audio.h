@@ -2,14 +2,18 @@
 
 #include <cstdint>
 
+#ifdef _WIN32
 #define NOMINMAX
 #define Rectangle Win32Rectangle
 #define CloseWindow Win32CloseWindow
 #define ShowCursor Win32ShowCursor
+#endif
 #include "../../thirdparty/miniaudio.h"
+#ifdef _WIN32
 #undef Rectangle
 #undef CloseWindow
 #undef ShowCursor
+#endif
 
 #include "sos_sequencer.h"
 
