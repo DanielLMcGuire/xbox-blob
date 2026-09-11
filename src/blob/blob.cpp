@@ -242,14 +242,14 @@ void Blob::Init()
 }
 
 void Blob::BuildCubeSphere(int resolution, std::vector<Vector3>& outPositions,
-                            std::vector<uint16_t>& outIndices)
+                           std::vector<uint16_t>& outIndices)
 {
     int subdiv = std::max(1, resolution / 2);
-    float step = 2.0f / (float)subdiv;
+    float step = 2.0f / static_cast<float>(subdiv);
     int stride = subdiv + 1;
 
     outPositions.clear();
-    outPositions.resize(6 * stride * stride);
+    outPositions.resize(static_cast<size_t>(6) * stride * stride);
 
     for (int k = 0; k < 6; k++)
     {
