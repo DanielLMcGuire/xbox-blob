@@ -77,12 +77,15 @@ public:
     Vector3 GetCenter() const { return position; }
 
     void GetLightForPosition(Vector3 queryPosition, Vector3* outLightPos, float* outIntensity) const;
+    float GetLightIntensity() const { return lightIntensity; }
 
     Vector4 color{ 0.25f, 1.0f, 0.15f, 1.0f };
     Vector3 position{ 0, 0, 0 };
     Vector3 scale{ 1, 1, 1 };
 
 private:
+    float lightIntensity = 0.0f;
+
     enum { MAX_BLOB_BUMPS = 32 };
     enum { MAX_BLOBLETS = 8 };
 

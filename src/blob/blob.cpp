@@ -661,8 +661,6 @@ void Blob::AdvanceTime(float elapsedTime, float dt)
 
 void Blob::GetLightForPosition(Vector3 queryPosition, Vector3* outLightPos, float* outIntensity) const
 {
-    float lightIntensity = 0.0f;
-
     float totalWeights = 0.0f;
     Vector3 avPos{ 0, 0, 0 };
     float avIntensity = 0.0f;
@@ -694,6 +692,7 @@ void Blob::GetLightForPosition(Vector3 queryPosition, Vector3* outLightPos, floa
 void Blob::Render(const Camera3D& camera, float pulseIntensity, float blobIntensity,
                    float baseBlobIntensity, float elapsedTime)
 {
+    lightIntensity = blobIntensity + pulseIntensity;
     Matrix view = MatrixLookAt(camera.position, camera.target, camera.up);
     Matrix proj = MatrixPerspective(camera.fovy * DEG2RAD,
                                      (float)GetScreenWidth() / (float)GetScreenHeight(),
