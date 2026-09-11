@@ -5,15 +5,18 @@
 
 #include "sos_common.h"
 
-struct LoopFrame {
+struct LoopFrame
+{
     int count = 0;
-    union {
+    union
+    {
         size_t returnIndex = 0;
         size_t addr;
     };
 };
 
-struct Track {
+struct Track
+{
     const ushort* bytecode = nullptr;
     size_t length = 0;
     size_t pc = 0;

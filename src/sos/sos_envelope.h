@@ -16,7 +16,8 @@ inline constexpr DSENVELOPEDESC Env3m      = { 0, 1, 0, 0x1,   0x0,   0x10,  0x0
 inline constexpr DSENVELOPEDESC OpenEnva   = { 1, 1, 0, 0x0,   0x0,   0x0,   0x0,  0xff, 0,    0 };
 inline constexpr DSENVELOPEDESC OpenEnvm   = { 0, 1, 0, 0,     0x0,   0x0,   0x0,  0xff, 0,    0 };
 
-struct EnvelopeGenerator {
+struct EnvelopeGenerator
+{
     enum State { OFF, DELAY, ATTACK, HOLD, DECAY, SUSTAIN, RELEASE } state = OFF;
     
     float level = 0.0f;

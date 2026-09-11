@@ -212,17 +212,6 @@ bool BlobBump::Update(float elapsedTime, float dt, Bloblet* bloblet)
     return false;
 }
 
-Blob::Blob()
-{
-    Init();
-    Load();
-}
-
-Blob::~Blob()
-{
-    Unload();
-}
-
 void Blob::Init()
 {
     for (auto& b : blobBumps) b.Init();

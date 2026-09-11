@@ -17,10 +17,11 @@
 
 #include "sos_sequencer.h"
 
-class SOSAudio {
+class SOSAudio
+{
 public:
-    SOSAudio() = default;
-    ~SOSAudio();
+    SOSAudio() { init(); }
+    ~SOSAudio() { deinit(); }
 
     bool init();
     void restart();

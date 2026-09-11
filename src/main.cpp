@@ -163,7 +163,6 @@ int main()
     IntensityDriver driver;
 #ifdef DOAUDIO
     SOSAudio audio;
-    bool audioInitialized = false;
 #endif
 
     while (!WindowShouldClose())
@@ -178,21 +177,14 @@ int main()
         const bool animationLooped =
             currentElapsedTime < previousElapsedTime;
 
-        if (animationLooped && audioInitialized)
-        {
-
+        if (animationLooped)
             audio.restart();
-
-        }
 #endif
         const bool animationStarted =
             currentElapsedTime >= BLOB_STATIC_END_TIME;
 #ifdef DOAUDIO
-        if (animationStarted && !audioInitialized)
-        {
+        if (animationStarted)
             audio.init();
-            audioInitialized = true;
-        }
 #endif
         BeginDrawing();
         ClearBackground(BLACK);
@@ -216,10 +208,6 @@ int main()
 
         EndDrawing();
     }
-#ifdef DOAUDIO
-    if (audioInitialized)
-        audio.deinit();
-#endif
     CloseWindow();
     return 0;
 }
@@ -294,9 +282,6 @@ int main()
         std::fputs("Failed to export WAV", stderr);
 #endif
     CloseWindow();
-#ifdef DOAUDIO
-    audio.deinit();
-#endif
     return 0;
 }
 #endif

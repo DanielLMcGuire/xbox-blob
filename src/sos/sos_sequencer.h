@@ -9,7 +9,8 @@
 #include "sos_track.h"
 #include "sos_voice.h"
 
-class SOSSequencer {
+class SOSSequencer
+{
 private:
     Patch patches[11];
     Voice voices[MAX_TRACKS];

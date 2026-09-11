@@ -1,7 +1,8 @@
 #pragma once
 #include <cstdint>
 
-struct DSENVELOPEDESC {
+struct DSENVELOPEDESC
+{
     uint32_t dwEG; 
     uint32_t dwMode; 
     uint32_t dwDelay; 

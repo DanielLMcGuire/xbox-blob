@@ -8,7 +8,8 @@
 #include "sos_envelope.h"
 #include "sos_sample.h"
 
-class Voice {
+class Voice
+{
 public:
     const Patch* patch = nullptr;
     EnvelopeGenerator ampEG;
@@ -27,16 +28,19 @@ public:
     float y1 = 0.0f;
     float y2 = 0.0f;
 
-    inline void setPatch(const Patch* p, float sampleRate) {
+    inline void setPatch(const Patch* p, float sampleRate)
+    {
         patch = p;
-        if (p) {
+        if (p)
+        {
             ampEG.setDesc(p->ampEnv, sampleRate);
             multiEG.setDesc(p->multiEnv, sampleRate);
         }
         samplePos = 0.0;
     }
 
-    inline void noteOn(int16_t pitch) {
+    inline void noteOn(int16_t pitch)
+    {
         currentPitch = pitch;
         samplePos = 0.0;
         ampEG.trigger();
@@ -50,12 +54,14 @@ public:
     inline void setFilter(int16_t cut, uint16_t res) { filterCutoff = cut; filterRes = res; }
     inline void noteOff() { ampEG.release(); multiEG.release(); }
 
-    inline void setVolume(int16_t vol) {
+    inline void setVolume(int16_t vol)
+    {
         float mB = (float)(-vol * 30 + 200);
         channelGain = std::pow(10.0f, (mB / 100.0f) / 20.0f);
     }
 
-    inline void renderBlock(float* outL, float* outR, int numFrames, float sampleRate) {
+    inline void renderBlock(float* outL, float* outR, int numFrames, float sampleRate)
+    {
         if (!active || !patch) return;
 
         int framesRendered = 0;
@@ -65,7 +71,8 @@ public:
             float aLvl = ampEG.processBlock(framesToProcess);
             float mLvl = multiEG.processBlock(framesToProcess);
 
-            if (ampEG.state == EnvelopeGenerator::OFF) {
+            if (ampEG.state == EnvelopeGenerator::OFF)
+            {
                 active = false;
                 return;
             }
@@ -92,7 +99,8 @@ public:
             for (int i = 0; i < framesToProcess; ++i) {
                 float raw = patch->sample.read(samplePos);
                 samplePos += speed;
-                if (!patch->sample.loop && samplePos >= patch->sample.data.size()) {
+                if (!patch->sample.loop && samplePos >= patch->sample.data.size())
+                {
                     active = false;
                     return;
                 }

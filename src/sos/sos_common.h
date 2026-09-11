@@ -12,7 +12,8 @@ constexpr float  SOS_PI           = 3.14159265358979323846f;
 
 using ushort = int16_t;
 
-enum OpCode {
+enum OpCode
+{
     F_REST = 0, F_NOTE = 1, F_JUMPTO = 2, F_LOOP = 3, F_ENDLOOP = 4,
     F_PATCH = 5, F_PAN = 6, F_MUX = 7, F_DEMUX = 8, F_VOLUME = 9,
     F_XPOSE = 10, F_XSET = 11, F_SLUR = 12, F_RING = 13, F_CLOCKSET = 14,
@@ -31,7 +32,8 @@ enum OpCode {
 #define finc(f, res)       F_FILTERINC, f, res
 #define fset(f, res)       F_FILTERSET, f, res
 
-enum Pitches {
+enum Pitches
+{
     cc0=0,  cs0=1,  dd0=2,  ds0=3,  ee0=4,  ff0=5,  fs0=6,  gg0=7,  gs0=8,  aa0=9,  as0=10, bb0=11,
     cc1=12, cs1=13, dd1=14, ds1=15, ee1=16, ff1=17, fs1=18, gg1=19, gs1=20, aa1=21, as1=22, bb1=23,
     cc2=24, cs2=25, dd2=26, ds2=27, ee2=28, ff2=29, fs2=30, gg2=31, gs2=32, aa2=33, as2=34, bb2=35,
@@ -40,7 +42,8 @@ enum Pitches {
     cc5=60, cs5=61, dd5=62, ds5=63, ee5=64, ff5=65, fs5=66, gg5=67, gs5=68, aa5=69, as5=70, bb5=71
 };
 
-enum PatchID {
+enum PatchID
+{
     PSIN1 = 0, PSAW1 = 1, PSQUARE = 2, PSAW2 = 3, PSAW3 = 4,
     PNOISE1 = 5, PGLOCK = 6, PBUBBLE = 7, PFM = 8, PTHUNEL16 = 9, PREVTHUN = 10
 };

@@ -57,19 +57,15 @@ private:
 class Blob
 {
 public:
-    Blob();
-    ~Blob();
+    Blob() { Init(); Load(); }
+    ~Blob() { Unload(); }
 
     void Init();
-
     void Load();
-
     void Unload();
-
     void Restart();
 
     void AdvanceTime(float elapsedTime, float dt);
-
     void Render(const Camera3D& camera, float pulseIntensity, float blobIntensity,
                 float baseBlobIntensity, float elapsedTime);
 
