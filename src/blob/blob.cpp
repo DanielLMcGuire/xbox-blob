@@ -1,5 +1,5 @@
 #include "blob.h"
-#include "defines.h"
+#include "../defines.h"
 #include <rlgl.h>
 #include <cmath>
 #include <cstdlib>
@@ -525,7 +525,7 @@ void Blob::Load()
 
     Restart();
 
-    blobShader = LoadShader("shaders/blob.vs", "shaders/blob.fs");
+    blobShader = LoadShader("shaders/blob.vert", "shaders/blob.frag");
     blobLoc_mvp = GetShaderLocation(blobShader, "mvp");
     blobLoc_eyePos = GetShaderLocation(blobShader, "eyePos");
     blobLoc_scaling = GetShaderLocation(blobShader, "scaling");
@@ -534,7 +534,7 @@ void Blob::Load()
     blobLoc_baseColor = GetShaderLocation(blobShader, "baseColor");
     blobLoc_ambientColor = GetShaderLocation(blobShader, "ambientColor");
 
-    blobletShader = LoadShader("shaders/bloblet.vs", "shaders/bloblet.fs");
+    blobletShader = LoadShader("shaders/bloblet.vert", "shaders/bloblet.frag");
     bloLoc_mvp = GetShaderLocation(blobletShader, "mvp");
     bloLoc_eyePos = GetShaderLocation(blobletShader, "eyePos");
     bloLoc_center = GetShaderLocation(blobletShader, "center");

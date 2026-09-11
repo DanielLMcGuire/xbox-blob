@@ -1,19 +1,25 @@
 #include "raylib.h"
 #include "raymath.h"
-#include "blob.h"
+#include "blob/blob.h"
 #include "qrand.h"
 #include "defines.h"
 #include <algorithm>
 #include <cmath>
 #include "rlgl.h"
 
-//#define FRAMERATE 60.0f
-#define CAPTURE_FRAMERATE 240.0f
+// options
+#define DOAUDIO // comment out to disable audio
+//#define FRAMERATE 60.0f // uncomment to cap / turn off vsync
+//#define DO_CAPTURE 1 // uncomment to enable capture, not compatible with other options
 
-//#define DO_CAPTURE 1
+#ifdef DOAUDIO
+#include "sos/sos_audio.h"
+#endif
+
 #ifdef DO_CAPTURE
 #include <cstdio>
 #include <filesystem>
+#define CAPTURE_FRAMERATE 240.0f
 #endif
 
 class IntensityDriver
@@ -137,8 +143,10 @@ int main()
 #ifndef FRAMERATE
     SetConfigFlags(FLAG_VSYNC_HINT);
 #endif
-    InitWindow(screenWidth, screenHeight, "Xbox Blob");
+
+    InitWindow(screenWidth, screenHeight, "Xbox Startup");
     rlDisableBackfaceCulling();
+
 #ifdef FRAMERATE
     SetTargetFPS(FRAMERATE);
 #endif
@@ -153,26 +161,65 @@ int main()
 
     Blob blob;
     IntensityDriver driver;
+#ifdef DOAUDIO
+    SOSAudio audio;
+    bool audioInitialized = false;
+#endif
 
     while (!WindowShouldClose())
     {
+#ifdef DOAUDIO
+        const float previousElapsedTime = driver.GetElapsedTime();
+#endif
         driver.Advance(GetFrameTime(), blob);
 
+        const float currentElapsedTime = driver.GetElapsedTime();
+#ifdef DOAUDIO
+        const bool animationLooped =
+            currentElapsedTime < previousElapsedTime;
+
+        if (animationLooped && audioInitialized)
+        {
+
+            audio.restart();
+
+        }
+#endif
+        const bool animationStarted =
+            currentElapsedTime >= BLOB_STATIC_END_TIME;
+#ifdef DOAUDIO
+        if (animationStarted && !audioInitialized)
+        {
+            audio.init();
+            audioInitialized = true;
+        }
+#endif
         BeginDrawing();
         ClearBackground(BLACK);
 
-        if (driver.GetElapsedTime() >= BLOB_STATIC_END_TIME)
+        if (animationStarted)
         {
             BeginMode3D(camera);
-            blob.Render(camera, driver.GetPulseIntensity(), driver.GetIntensity(),
-                        driver.GetBaseIntensity(), driver.GetElapsedTime());
+
+            blob.Render(
+                camera,
+                driver.GetPulseIntensity(),
+                driver.GetIntensity(),
+                driver.GetBaseIntensity(),
+                currentElapsedTime
+            );
+
             EndMode3D();
         }
 
         DrawFPS(10, 10);
+
         EndDrawing();
     }
-
+#ifdef DOAUDIO
+    if (audioInitialized)
+        audio.deinit();
+#endif
     CloseWindow();
     return 0;
 }
@@ -185,7 +232,7 @@ int main()
     constexpr float fov = 45.0f;
     constexpr float fixedDt = 1.0f / CAPTURE_FRAMERATE;
 
-    InitWindow(screenWidth, screenHeight, "Xbox Blob");
+    InitWindow(screenWidth, screenHeight, "Xbox Startup | Rendering...");
     std::filesystem::create_directories("frames");
     rlDisableBackfaceCulling();
 
@@ -200,6 +247,9 @@ int main()
     Blob blob;
     IntensityDriver driver;
     driver.loop = false;
+#ifdef DOAUDIO
+    SOSAudio audio;
+#endif
 
     int frameNumber = 0;
 
@@ -239,9 +289,14 @@ int main()
 
         TakeScreenshot(filename);
     }
-
+#ifdef DOAUDIO
+    if (!audio.exportWav("frames/audio.wav", driver.GetElapsedTime()))
+        std::fputs("Failed to export WAV", stderr);
+#endif
     CloseWindow();
-
+#ifdef DOAUDIO
+    audio.deinit();
+#endif
     return 0;
 }
 #endif

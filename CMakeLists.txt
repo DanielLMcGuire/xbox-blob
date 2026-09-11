@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.20)
 
 project(xbox_blob_raylib CXX)
 
@@ -27,15 +27,18 @@ set(BUILD_GAMES OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(raylib)
 
-add_executable(xbox_blob
+add_executable(xbox_startup
     src/main.cpp
-    src/blob.cpp
+    src/blob/blob.cpp
+    src/sos/sos_audio.cpp
+    src/sos/sos_envelope.cpp
+    src/sos/sos_sequencer.cpp
 )
 
-target_link_libraries(xbox_blob PRIVATE raylib)
+target_link_libraries(xbox_startup PRIVATE raylib)
 
 if (APPLE)
-    target_link_libraries(xbox_blob PRIVATE
+    target_link_libraries(xbox_startup PRIVATE
         "-framework IOKit"
         "-framework Cocoa"
         "-framework OpenGL"
@@ -46,19 +49,18 @@ file(GLOB_RECURSE SHADER_FILES CONFIGURE_DEPENDS
     "${CMAKE_SOURCE_DIR}/src/shaders/*"
 )
 
-add_custom_target(xbox_blob_shaders ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/src/shaders"
-        "${CMAKE_BINARY_DIR}/shaders"
-    DEPENDS ${SHADER_FILES}
-)
-
-add_dependencies(xbox_blob xbox_blob_shaders)
+set(SHADER_STAMP "${CMAKE_CURRENT_BINARY_DIR}/shaders_copy.stamp")
 
 add_custom_command(
-    TARGET xbox_blob
-    POST_BUILD
+    OUTPUT "${SHADER_STAMP}"
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_BINARY_DIR}/shaders"
-        "$<TARGET_FILE_DIR:xbox_blob>/shaders"
+        "${CMAKE_SOURCE_DIR}/src/shaders"
+        "$<TARGET_FILE_DIR:xbox_startup>/shaders"
+    COMMAND ${CMAKE_COMMAND} -E touch "${SHADER_STAMP}"
+    DEPENDS ${SHADER_FILES}
+    COMMENT "Copying shaders to output directory..."
 )
+
+add_custom_target(xbox_blob_shaders ALL DEPENDS "${SHADER_STAMP}")
+
+add_dependencies(xbox_startup xbox_blob_shaders)

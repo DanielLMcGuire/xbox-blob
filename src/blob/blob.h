@@ -2,7 +2,7 @@
 
 #include "raylib.h"
 #include "raymath.h"
-#include "qrand.h"
+#include "../qrand.h"
 #include <vector>
 #include <cstdint>
 
