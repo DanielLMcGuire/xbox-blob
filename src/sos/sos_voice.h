@@ -8,6 +8,10 @@
 #include "sos_envelope.h"
 #include "sos_sample.h"
 
+
+namespace SOS 
+{
+
 class Voice
 {
 public:
@@ -118,3 +122,5 @@ public:
         }
     }
 };
+
+}

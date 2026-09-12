@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 
 project(xbox_blob_raylib CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(FetchContent)
@@ -44,23 +44,3 @@ if (APPLE)
         "-framework OpenGL"
     )
 endif()
-
-file(GLOB_RECURSE SHADER_FILES CONFIGURE_DEPENDS
-    "${CMAKE_SOURCE_DIR}/src/shaders/*"
-)
-
-set(SHADER_STAMP "${CMAKE_CURRENT_BINARY_DIR}/shaders_copy.stamp")
-
-add_custom_command(
-    OUTPUT "${SHADER_STAMP}"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/src/shaders"
-        "$<TARGET_FILE_DIR:xbox_startup>/shaders"
-    COMMAND ${CMAKE_COMMAND} -E touch "${SHADER_STAMP}"
-    DEPENDS ${SHADER_FILES}
-    COMMENT "Copying shaders to output directory..."
-)
-
-add_custom_target(xbox_blob_shaders ALL DEPENDS "${SHADER_STAMP}")
-
-add_dependencies(xbox_startup xbox_blob_shaders)

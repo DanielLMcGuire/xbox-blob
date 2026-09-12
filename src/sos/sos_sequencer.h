@@ -9,7 +9,11 @@
 #include "sos_track.h"
 #include "sos_voice.h"
 
-class SOSSequencer
+
+namespace SOS 
+{
+
+class Sequencer
 {
 private:
     Patch patches[11];
@@ -25,13 +29,14 @@ private:
 
     void initPatches();
     void initPanning();
-    void stepTrack(int ch);
     void tick();
 
 public:
-    SOSSequencer();
+    Sequencer();
 
     void setSampleRate(float sr);
     void startBootSound();
     void render(float* output, int frameCount);
 };
+
+}

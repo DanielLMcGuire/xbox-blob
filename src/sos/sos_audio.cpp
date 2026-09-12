@@ -5,7 +5,10 @@
 #include <cmath>
 #include <vector>
 
-bool SOSAudio::init()
+namespace SOS 
+{
+
+bool Audio::init()
 {
     if (initialized) return true;
 
@@ -32,7 +35,7 @@ bool SOSAudio::init()
     return true;
 }
 
-void SOSAudio::restart()
+void Audio::restart()
 {
     if (!initialized) return;
 
@@ -41,7 +44,7 @@ void SOSAudio::restart()
     ma_device_start(&device);
 }
 
-void SOSAudio::deinit()
+void Audio::deinit()
 {
     if (initialized) {
         ma_device_uninit(&device);
@@ -49,13 +52,13 @@ void SOSAudio::deinit()
     }
 }
 
-bool SOSAudio::exportWav(const char* filename, double durationSeconds, uint32_t sampleRate)
+bool Audio::exportWav(const char* filename, double durationSeconds, uint32_t sampleRate)
 {
     if (!filename || durationSeconds <= 0.0 || sampleRate == 0)
         return false;
 
     const ma_uint64 totalFrames = static_cast<ma_uint64>(durationSeconds * sampleRate);
-    SOSSequencer exportSeq;
+    Sequencer exportSeq;
     exportSeq.setSampleRate(static_cast<float>(sampleRate));
     exportSeq.startBootSound();
 
@@ -93,9 +96,10 @@ bool SOSAudio::exportWav(const char* filename, double durationSeconds, uint32_t 
     return true;
 }
 
-void SOSAudio::dataCallback(ma_device* pDevice, void* pOutput, const void*, ma_uint32 frameCount)
+void Audio::dataCallback(ma_device* pDevice, void* pOutput, const void*, ma_uint32 frameCount)
 {
-    auto* audio = static_cast<SOSAudio*>(pDevice->pUserData);
+    auto* audio = static_cast<Audio*>(pDevice->pUserData);
     if (audio && pOutput && frameCount > 0)
         audio->sequencer.render(static_cast<float*>(pOutput), static_cast<int>(frameCount));
+}
 }

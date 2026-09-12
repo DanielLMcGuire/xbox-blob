@@ -10,13 +10,17 @@
 #define SOS_PI 3.14159265358979323846f
 #endif
 
-SOSSequencer::SOSSequencer()
+
+namespace SOS 
+{
+
+Sequencer::Sequencer()
 {
     initPatches();
     initPanning();
 }
 
-void SOSSequencer::initPatches()
+void Sequencer::initPatches()
 {
     patches[PSIN1].sample.data.resize(128);
     patches[PSIN1].sample.loop = true;
@@ -99,7 +103,7 @@ void SOSSequencer::initPatches()
     patches[PREVTHUN].multiEnv = &OpenEnvm;
 }
 
-void SOSSequencer::initPanning()
+void Sequencer::initPanning()
 {
     for (int i = 0; i < MAX_TRACKS; i++)
     {
@@ -121,17 +125,8 @@ void SOSSequencer::initPanning()
     }
 }
 
-void SOSSequencer::stepTrack(int ch)
+void Sequencer::tick()
 {
-    auto& t = tracks[ch];
-    if (!t.canRead(1)) 
-    { 
-        t.active = false; 
-        return; 
-    }
-
-    ushort op = t.read();
-
 #if defined(__GNUC__) || defined(__clang__)
 #if defined(__clang__)
 #pragma clang diagnostic push
@@ -170,172 +165,121 @@ void SOSSequencer::stepTrack(int ch)
 #endif
 
     constexpr size_t tableSize = sizeof(dispatchTable) / sizeof(dispatchTable[0]);
+#endif
 
-    if (op >= tableSize || !dispatchTable[op])
-        goto lbl_DEFAULT;
-
-    goto *dispatchTable[op];
-
-lbl_REST:
-    if (t.canRead(1))
+    for (int ch = 0; ch < MAX_TRACKS; ch++)
     {
-        voices[ch].noteOff();
-        t.timer += t.read();
-    }
-    return;
+        auto& t = tracks[ch];
+        if (!t.active) continue;
 
-lbl_NOTE:
-    if (t.canRead(2))
-    {
-        uint8_t p = (uint8_t)t.read();
-        ushort dur = t.read();
-        t.pitch = (p << 8) + t.transpose;
-        voices[ch].noteOn(t.pitch);
-        t.timer += dur;
-    }
-    return;
+        t.timer--;
+        if (t.timer > 0) continue;
 
-lbl_SLUR:
-    if (t.canRead(2))
-    {
-        uint8_t p = (uint8_t)t.read();
-        ushort dur = t.read();
-        t.pitch = (p << 8) + t.transpose;
-        voices[ch].setPitch(t.pitch);
-        t.timer += dur;
-    }
-    return;
+#if defined(__GNUC__) || defined(__clang__)
+        #define NEXT() \
+            do { \
+                if (!t.canRead(1)) { t.active = false; goto track_done; } \
+                int16_t op = t.read(); \
+                if (op >= tableSize || !dispatchTable[op]) goto lbl_DEFAULT; \
+                goto *dispatchTable[op]; \
+            } while (0)
 
-lbl_RING:
-    if (t.canRead(1)) t.timer += t.read();
-    return;
+        NEXT();
 
-lbl_FILTERSET:
-    if (t.canRead(2))
-    {
-        t.filterCutoff = (int16_t)t.read();
-        t.filterRes = t.read();
-        voices[ch].setFilter(t.filterCutoff, t.filterRes);
-    }
-    return;
-
-lbl_FILTERINC:
-    if (t.canRead(2))
-    {
-        t.filterCutoff += (int16_t)t.read();
-        t.filterRes = t.read();
-        voices[ch].setFilter(t.filterCutoff, t.filterRes);
-    }
-    return;
-
-lbl_PATCH:
-    if (t.canRead(1))
-    {
-        ushort pat = t.read();
-        if (pat < 11)
-        {
-            t.patchIdx = pat;
-            t.volume = 0;
-            voices[ch].setPatch(&patches[pat], sampleRate);
-            voices[ch].setVolume(t.volume);
-        }
-    }
-    return;
-
-lbl_VOLUME:
-    if (t.canRead(1))
-    {
-        t.volume += (int16_t)t.read();
-        voices[ch].setVolume(t.volume);
-    }
-    return;
-
-lbl_XPOSE:
-    if (t.canRead(1))
-        t.transpose += (int16_t)t.read();
-    return;
-
-lbl_LOOP:
-    if (t.canRead(1))
-    {
-        ushort count = t.read();
-        if (t.loopDepth < MAX_LOOP_DEPTH)
-            t.loopStack[t.loopDepth++] = { count, t.pc };
-    }
-    return;
-
-lbl_ENDLOOP:
-    if (t.loopDepth > 0)
-    {
-        if (--t.loopStack[t.loopDepth - 1].count > 0)
-            t.pc = t.loopStack[t.loopDepth - 1].returnIndex;
-        else
-            t.loopDepth--;
-    }
-    return;
-
-lbl_END:
-    t.active = false;
-    voices[ch].noteOff();
-    return;
-
-lbl_DEFAULT:
-    t.active = false;
-    return;
-
-#else
-    switch (op) {
-    case F_REST:
-        if (t.canRead(1)) 
+    lbl_REST:
+        if (t.canRead(1))
         {
             voices[ch].noteOff();
             t.timer += t.read();
         }
-        break;
-    case F_NOTE:
-        if (t.canRead(2)) 
+        else
+        {
+            t.active = false;
+            goto track_done;
+        }
+        if (t.timer > 0) goto track_done;
+        NEXT();
+
+    lbl_NOTE:
+        if (t.canRead(2))
         {
             uint8_t p = (uint8_t)t.read();
-            ushort dur = t.read();
+            int16_t dur = t.read();
             t.pitch = (p << 8) + t.transpose;
             voices[ch].noteOn(t.pitch);
             t.timer += dur;
         }
-        break;
-    case F_SLUR:
-        if (t.canRead(2)) 
+        else
+        {
+            t.active = false;
+            goto track_done;
+        }
+        if (t.timer > 0) goto track_done;
+        NEXT();
+
+    lbl_SLUR:
+        if (t.canRead(2))
         {
             uint8_t p = (uint8_t)t.read();
-            ushort dur = t.read();
+            int16_t dur = t.read();
             t.pitch = (p << 8) + t.transpose;
             voices[ch].setPitch(t.pitch);
             t.timer += dur;
         }
-        break;
-    case F_RING:
-        if (t.canRead(1)) t.timer += t.read();
-        break;
-    case F_FILTERSET:
-        if (t.canRead(2)) 
+        else
+        {
+            t.active = false;
+            goto track_done;
+        }
+        if (t.timer > 0) goto track_done;
+        NEXT();
+
+    lbl_RING:
+        if (t.canRead(1))
+        {
+            t.timer += t.read();
+        }
+        else
+        {
+            t.active = false;
+            goto track_done;
+        }
+        if (t.timer > 0) goto track_done;
+        NEXT();
+
+    lbl_FILTERSET:
+        if (t.canRead(2))
         {
             t.filterCutoff = (int16_t)t.read();
             t.filterRes = t.read();
             voices[ch].setFilter(t.filterCutoff, t.filterRes);
         }
-        break;
-    case F_FILTERINC:
-        if (t.canRead(2)) 
+        else
+        {
+            t.active = false;
+            goto track_done;
+        }
+        NEXT();
+
+    lbl_FILTERINC:
+        if (t.canRead(2))
         {
             t.filterCutoff += (int16_t)t.read();
             t.filterRes = t.read();
             voices[ch].setFilter(t.filterCutoff, t.filterRes);
         }
-        break;
-    case F_PATCH:
-        if (t.canRead(1)) 
+        else
         {
-            ushort pat = t.read();
-            if (pat < 11) 
+            t.active = false;
+            goto track_done;
+        }
+        NEXT();
+
+    lbl_PATCH:
+        if (t.canRead(1))
+        {
+            int16_t pat = t.read();
+            if (pat < 11)
             {
                 t.patchIdx = pat;
                 t.volume = 0;
@@ -343,26 +287,53 @@ lbl_DEFAULT:
                 voices[ch].setVolume(t.volume);
             }
         }
-        break;
-    case F_VOLUME:
-        if (t.canRead(1)) 
+        else
+        {
+            t.active = false;
+            goto track_done;
+        }
+        NEXT();
+
+    lbl_VOLUME:
+        if (t.canRead(1))
         {
             t.volume += (int16_t)t.read();
             voices[ch].setVolume(t.volume);
         }
-        break;
-    case F_XPOSE:
-        if (t.canRead(1)) t.transpose += (int16_t)t.read();
-        break;
-    case F_LOOP:
-        if (t.canRead(1)) 
+        else
         {
-            ushort count = t.read();
+            t.active = false;
+            goto track_done;
+        }
+        NEXT();
+
+    lbl_XPOSE:
+        if (t.canRead(1))
+        {
+            t.transpose += (int16_t)t.read();
+        }
+        else
+        {
+            t.active = false;
+            goto track_done;
+        }
+        NEXT();
+
+    lbl_LOOP:
+        if (t.canRead(1))
+        {
+            int16_t count = t.read();
             if (t.loopDepth < MAX_LOOP_DEPTH)
                 t.loopStack[t.loopDepth++] = { count, t.pc };
         }
-        break;
-    case F_ENDLOOP:
+        else
+        {
+            t.active = false;
+            goto track_done;
+        }
+        NEXT();
+
+    lbl_ENDLOOP:
         if (t.loopDepth > 0)
         {
             if (--t.loopStack[t.loopDepth - 1].count > 0)
@@ -370,37 +341,136 @@ lbl_DEFAULT:
             else
                 t.loopDepth--;
         }
-        break;
-    case F_END:
+        NEXT();
+
+    lbl_END:
         t.active = false;
         voices[ch].noteOff();
-        break;
-    default:
+        goto track_done;
+
+    lbl_DEFAULT:
         t.active = false;
-        break;
-    }
-#endif
-}
+        goto track_done;
 
-void SOSSequencer::tick()
-{
-    for (int i = 0; i < MAX_TRACKS; i++)
-    {
-        auto& t = tracks[i];
-        if (!t.active) continue;
-        t.timer--;
+        #undef NEXT
+    track_done:;
+#else
         while (t.active && t.timer <= 0)
-            stepTrack(i);
+        {
+            if (!t.canRead(1))
+            {
+                t.active = false;
+                break;
+            }
+            int16_t op = t.read();
+            switch (op)
+            {
+            case F_REST:
+                if (t.canRead(1))
+                {
+                    voices[ch].noteOff();
+                    t.timer += t.read();
+                }
+                break;
+            case F_NOTE:
+                if (t.canRead(2))
+                {
+                    uint8_t p = (uint8_t)t.read();
+                    int16_t dur = t.read();
+                    t.pitch = (p << 8) + t.transpose;
+                    voices[ch].noteOn(t.pitch);
+                    t.timer += dur;
+                }
+                break;
+            case F_SLUR:
+                if (t.canRead(2))
+                {
+                    uint8_t p = (uint8_t)t.read();
+                    int16_t dur = t.read();
+                    t.pitch = (p << 8) + t.transpose;
+                    voices[ch].setPitch(t.pitch);
+                    t.timer += dur;
+                }
+                break;
+            case F_RING:
+                if (t.canRead(1)) t.timer += t.read();
+                break;
+            case F_FILTERSET:
+                if (t.canRead(2))
+                {
+                    t.filterCutoff = (int16_t)t.read();
+                    t.filterRes = t.read();
+                    voices[ch].setFilter(t.filterCutoff, t.filterRes);
+                }
+                break;
+            case F_FILTERINC:
+                if (t.canRead(2))
+                {
+                    t.filterCutoff += (int16_t)t.read();
+                    t.filterRes = t.read();
+                    voices[ch].setFilter(t.filterCutoff, t.filterRes);
+                }
+                break;
+            case F_PATCH:
+                if (t.canRead(1))
+                {
+                    int16_t pat = t.read();
+                    if (pat < 11)
+                    {
+                        t.patchIdx = pat;
+                        t.volume = 0;
+                        voices[ch].setPatch(&patches[pat], sampleRate);
+                        voices[ch].setVolume(t.volume);
+                    }
+                }
+                break;
+            case F_VOLUME:
+                if (t.canRead(1))
+                {
+                    t.volume += (int16_t)t.read();
+                    voices[ch].setVolume(t.volume);
+                }
+                break;
+            case F_XPOSE:
+                if (t.canRead(1)) t.transpose += (int16_t)t.read();
+                break;
+            case F_LOOP:
+                if (t.canRead(1))
+                {
+                    int16_t count = t.read();
+                    if (t.loopDepth < MAX_LOOP_DEPTH)
+                        t.loopStack[t.loopDepth++] = { count, t.pc };
+                }
+                break;
+            case F_ENDLOOP:
+                if (t.loopDepth > 0)
+                {
+                    if (--t.loopStack[t.loopDepth - 1].count > 0)
+                        t.pc = t.loopStack[t.loopDepth - 1].returnIndex;
+                    else
+                        t.loopDepth--;
+                }
+                break;
+            case F_END:
+                t.active = false;
+                voices[ch].noteOff();
+                break;
+            default:
+                t.active = false;
+                break;
+            }
+        }
+#endif
     }
 }
 
-void SOSSequencer::setSampleRate(float sr)
+void Sequencer::setSampleRate(float sr)
 {
     sampleRate = sr;
     samplesPerTick = sampleRate * 0.005f;
 }
 
-void SOSSequencer::startBootSound()
+void Sequencer::startBootSound()
 {
     constexpr int BOOT_TRACK_COUNT = 12;
     for (int i = 0; i < MAX_TRACKS; i++)
@@ -428,7 +498,7 @@ void SOSSequencer::startBootSound()
     tickCountdown = 0.0f;
 }
 
-void SOSSequencer::render(float* output, int frameCount) 
+void Sequencer::render(float* output, int frameCount) 
 {
     monoMixL.assign(frameCount, 0.0f);
     monoMixR.assign(frameCount, 0.0f);
@@ -462,4 +532,6 @@ void SOSSequencer::render(float* output, int frameCount)
         output[f * 2] = std::clamp(monoMixL[f] * 0.45f, -1.0f, 1.0f);
         output[f * 2 + 1] = std::clamp(monoMixR[f] * 0.45f, -1.0f, 1.0f);
     }
+}
+
 }

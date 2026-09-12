@@ -3,6 +3,9 @@
 #include <cstdint>
 #include "ds_envelope.h"
 
+
+namespace SOS {
+
 inline constexpr DSENVELOPEDESC Env1a      = { 1, 1, 0, 0x1,   0x5,   0x20,  0x0,  0x7f, 0,    0 };
 inline constexpr DSENVELOPEDESC Env1m      = { 0, 1, 0, 0x1,   0x0,   0x10,  0x0,  0x1f, 0x10, 0x7f };
 inline constexpr DSENVELOPEDESC SawEnv1a   = { 1, 1, 0, 0x1,   0x2,   0x10,  0x0,  0x9f, 0,    0 };
@@ -38,3 +41,5 @@ struct EnvelopeGenerator
     void release();
     float processBlock(int stepSamples);
 };
+
+}

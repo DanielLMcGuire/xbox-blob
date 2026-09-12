@@ -5,6 +5,8 @@
 
 #include "sos_envelope.h"
 
+namespace SOS {
+
 struct SampleBuffer
 {
     std::vector<float> data;
@@ -38,3 +40,5 @@ struct Patch
     const DSENVELOPEDESC* ampEnv = nullptr;
     const DSENVELOPEDESC* multiEnv = nullptr;
 };
+
+}

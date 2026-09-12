@@ -1,6 +1,6 @@
-const ushort Boot0[] = { 
+const int16_t Boot0[] = { 
     fset(29000,26000), 
-    patch(PSAW1), 
+    patch(SOS::PSAW1), 
     volume(10), 
     rest(194-50), 
     note(dd1,130), 
@@ -27,9 +27,9 @@ const ushort Boot0[] = {
     rest(20000), 
     endloop 
 };
-const ushort Boot1[] = { 
+const int16_t Boot1[] = { 
     fset(1000,26000), 
-    patch(5), 
+    patch(SOS::PNOISE1), 
     volume(43), 
     note(cc2,1),
 
@@ -51,8 +51,8 @@ const ushort Boot1[] = {
     rest(2000), 
     endloop 
 };
-const ushort Boot2[] = { 
-    patch(PBUBBLE), 
+const int16_t Boot2[] = { 
+    patch(SOS::PBUBBLE), 
     volume(12), 
     fset(6000,26000), 
     rest(134), 
@@ -72,8 +72,8 @@ const ushort Boot2[] = {
     rest(20000), 
     endloop
 };
-const ushort Boot3[] = { 
-    patch(PTHUNEL16),
+const int16_t Boot3[] = { 
+    patch(SOS::PTHUNEL16),
     volume(40),
     fset(32767,26000),
     rest(134),
@@ -93,10 +93,10 @@ const ushort Boot3[] = {
     rest(2000),
     endloop 
 };
-const ushort Boot4[] = { 
+const int16_t Boot4[] = { 
     rest(194),
     fset(32000,26000),
-    patch(PNOISE1),
+    patch(SOS::PNOISE1),
     volume(160),
 
     loop(8),
@@ -134,8 +134,8 @@ const ushort Boot4[] = {
     rest(20000), 
     endloop 
 };
-const ushort Boot5[] = { 
-    patch(PGLOCK), 
+const int16_t Boot5[] = { 
+    patch(SOS::PGLOCK), 
     volume(55), 
     rest(1114), 
     fset(32000,26000), 
@@ -161,13 +161,13 @@ const ushort Boot5[] = {
     rest(20000), 
     endloop 
 };
-const ushort Boot6[] = { 
+const int16_t Boot6[] = { 
     loop(255), 
     rest(20000), 
     endloop
 };
-const ushort Boot7[] = { 
-    patch(PSAW2), 
+const int16_t Boot7[] = { 
+    patch(SOS::PSAW2), 
     xpose(0x60), 
     volume(18), 
     fset(1000,26000), 
@@ -195,13 +195,13 @@ const ushort Boot7[] = {
     rest(2000), 
     endloop
 };
-const ushort Boot8[] = { 
+const int16_t Boot8[] = { 
     loop(255), 
     rest(20000), 
     endloop
 };
-const ushort Boot9[] = { 
-    patch(PTHUNEL16),
+const int16_t Boot9[] = { 
+    patch(SOS::PTHUNEL16),
     volume(50), 
     rest(326-50), 
     note(aa2,280), 
@@ -216,8 +216,8 @@ const ushort Boot9[] = {
     rest(2000), 
     endloop
 };
-const ushort BootA[] = { 
-    patch(PTHUNEL16), 
+const int16_t BootA[] = { 
+    patch(SOS::PTHUNEL16), 
     volume(50), 
     rest(454-50), 
     note(aa2,252), 
@@ -231,8 +231,8 @@ const ushort BootA[] = {
     rest(2000), 
     endloop
 };
-const ushort BootB[] = { 
-    patch(PTHUNEL16), 
+const int16_t BootB[] = { 
+    patch(SOS::PTHUNEL16), 
     volume(50), 
     rest(526-50), 
     note(aa2,274), 
@@ -247,10 +247,10 @@ const ushort BootB[] = {
     endloop
 };
 
-struct TrackSource { const ushort* data; size_t count; };
+struct TrackSource { const int16_t* data; size_t count; };
 #define TRACK_DEF(arr) { arr, sizeof(arr) / sizeof(arr[0]) }
 
-const TrackSource BootSequence[MAX_TRACKS] = {
+const TrackSource BootSequence[SOS::MAX_TRACKS] = {
     TRACK_DEF(Boot0), 
     TRACK_DEF(Boot1), 
     TRACK_DEF(Boot2), 

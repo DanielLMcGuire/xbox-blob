@@ -17,11 +17,15 @@
 
 #include "sos_sequencer.h"
 
-class SOSAudio
+namespace SOS 
+{
+
+class Audio
 {
 public:
-    SOSAudio() { init(); }
-    ~SOSAudio() { deinit(); }
+    Audio(bool doInit) { if (doInit) init(); }
+    Audio() { init(); }
+    ~Audio() { deinit(); }
 
     bool init();
     void restart();
@@ -32,7 +36,9 @@ public:
 private:
     static void dataCallback(ma_device* pDevice, void* pOutput, const void*, ma_uint32 frameCount);
 
-    SOSSequencer sequencer;
+    Sequencer sequencer;
     ma_device device{};
     bool initialized = false;
 };
+
+}

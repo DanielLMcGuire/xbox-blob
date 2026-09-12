@@ -20,8 +20,12 @@ constexpr float BLOB_PULSE_START = BLOB_STATIC_END_TIME;
 constexpr float BLOB_PULSE_END = FINISH_STOP_TIME - 0.4f;
 constexpr float BLOB_PULSE_ELAPSED = BLOB_PULSE_END - BLOB_PULSE_START;
 
-#if defined(_MSC_VER) && defined(_M_IX86)
-    #define USE_ASM_MSVC_X86
+#if defined(_MSC_VER)
+    #if defined(_M_IX86)
+        #define USE_ASM_MSVC_X86
+    #elif defined(__x86_64__)
+        #define USE_ASM_MSVC_X64
+    #endif
 #elif defined(__i386__) || defined(__x86_64__)
     #define USE_ASM_GCC_X86
 #endif

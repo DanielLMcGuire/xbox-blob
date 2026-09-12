@@ -1,7 +1,7 @@
 #include "raylib.h"
 #include "raymath.h"
 #include "blob/blob.h"
-#include "qrand.h"
+#include "util/qrand.h"
 #include "defines.h"
 #include <algorithm>
 #include <cmath>
@@ -10,7 +10,7 @@
 // options
 #define DOAUDIO // comment out to disable audio
 //#define FRAMERATE 60.0f // uncomment to cap / turn off vsync
-//#define DO_CAPTURE 1 // uncomment to enable capture, not compatible with other options
+//#define DO_CAPTURE // uncomment to enable capture, not compatible with other options
 
 #ifdef DOAUDIO
 #include "sos/sos_audio.h"
@@ -19,20 +19,17 @@
 #ifdef DO_CAPTURE
 #include <cstdio>
 #include <filesystem>
+#include "sos/sos_audio.h"
 #define CAPTURE_FRAMERATE 240.0f
 #endif
 
 class IntensityDriver
 {
 public:
-    IntensityDriver()
-    {
-        Init();
-    }
+    IntensityDriver() { Init(); }
 
     void Init()
     {
-        rng.Init();
         timeElapsed = 0.0f;
         smoothedIntensity = intensity = baseIntensity = DEMO_START_INTENSITY;
         iidt = 0.0f;
@@ -45,9 +42,7 @@ public:
         timeElapsed += dt;
 
         if (timeElapsed < BLOB_ZERO_INTENSE_END_TIME)
-        {
             baseIntensity = 0.0f;
-        }
         else
         {
             float t = (timeElapsed - BLOB_ZERO_INTENSE_END_TIME) * OO_MAX_INTENSITY_DELTA;
@@ -162,7 +157,7 @@ int main()
     Blob blob;
     IntensityDriver driver;
 #ifdef DOAUDIO
-    SOSAudio audio;
+    SOS::Audio audio(false);
 #endif
 
     while (!WindowShouldClose())
@@ -235,9 +230,7 @@ int main()
     Blob blob;
     IntensityDriver driver;
     driver.loop = false;
-#ifdef DOAUDIO
-    SOSAudio audio;
-#endif
+    SOS::Audio audio(false);
 
     int frameNumber = 0;
 
@@ -277,10 +270,8 @@ int main()
 
         TakeScreenshot(filename);
     }
-#ifdef DOAUDIO
     if (!audio.exportWav("frames/audio.wav", driver.GetElapsedTime()))
         std::fputs("Failed to export WAV", stderr);
-#endif
     CloseWindow();
     return 0;
 }

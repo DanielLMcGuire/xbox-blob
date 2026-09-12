@@ -5,6 +5,10 @@
 
 #include "sos_common.h"
 
+
+namespace SOS 
+{
+
 struct LoopFrame
 {
     int count = 0;
@@ -17,7 +21,7 @@ struct LoopFrame
 
 struct Track
 {
-    const ushort* bytecode = nullptr;
+    const int16_t* bytecode = nullptr;
     size_t length = 0;
     size_t pc = 0;
 
@@ -37,7 +41,9 @@ struct Track
         return pc + n <= length;
     }
 
-    inline ushort read() {
+    inline int16_t read() {
         return (pc < length) ? bytecode[pc++] : 0;
     }
 };
+
+}

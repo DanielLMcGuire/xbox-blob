@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <algorithm>
+#include "../util/x86-emu.h"
 
 Blob* g_Blob = nullptr;
 
@@ -217,8 +218,6 @@ void Blob::Init()
     for (auto& b : blobBumps) b.Init();
     for (auto& b : bloblets) b.Init();
 
-    g_BlobRand.Init();
-
     numBlobBumps = 0;
     numBloblets = 0;
 
@@ -308,23 +307,40 @@ void Blob::UploadStaticMesh(const std::vector<Vector3>& positions, const std::ve
     rlDisableVertexArray();
 }
 
+template <int width>
+constexpr int ComputeGlowScale()
+{
+    static_assert(
+        width > 0 &&
+        (4096 % width) == 0 &&
+        (((4096 / width) & ((4096 / width) - 1)) == 0),
+        "4096/WIDTH must be a power of two"
+    );
+
+    int tmp = 4096 / width;
+    int result = 1;
+
+    while (tmp != 1)
+    {
+        ++result;
+        tmp >>= 1;
+    }
+
+    return result;
+}
+
 void Blob::BuildGlowTexture()
 {
     constexpr int WIDTH = 256;
     constexpr int HEIGHT = 256;
-    constexpr uint32_t NOISE = 0; 
+
+    constexpr uint32_t NOISE = 0;
     constexpr uint32_t INITIAL_SEED = 12345;
 
     Image img = GenImageColor(WIDTH, HEIGHT, BLANK);
-    uint32_t* pPixels = (uint32_t*)img.data;
+    uint32_t* pPixels = static_cast<uint32_t*>(img.data);
 
-    int tmp = 4096 / WIDTH;
-    int scale = 1;	
-    while (tmp != 1) {
-        scale++;
-        tmp = tmp >> 1;
-    }
-    
+    int scale = ComputeGlowScale<WIDTH>();
     int cntrx = (WIDTH - 1) / 2;
     int cntry = (HEIGHT - 1) / 2;
     uint32_t seed = INITIAL_SEED;
@@ -449,32 +465,37 @@ void Blob::BuildGlowTexture()
 #else
             int dx = x - cntrx;
             int dy = y - cntry;
-            dx <<= scale;
-            dy <<= scale;
-            uint32_t distSq = (uint32_t)((int64_t)dx * dx) + (uint32_t)((int64_t)dy * dy);
-            int64_t edx_dist = 16777216LL - distSq;
-            uint32_t ebx_val = (edx_dist < 0) ? 0 : (uint32_t)edx_dist;
-            uint64_t mul_noise = (uint64_t)ebx_val * NOISE;
-            uint32_t eax_noise = (uint32_t)(mul_noise >> 32);
-            bool cf_mul = (eax_noise != 0);
-            uint32_t ecx_seed = (seed << 13) | (cf_mul ? (1 << 12) : 0) | (seed >> 20);
-            uint32_t edx_seed = seed - 11;
-            seed = ecx_seed - edx_seed;
-            uint64_t mul_seed = (uint64_t)eax_noise * seed;
-            uint32_t edx_seed_mul = (uint32_t)(mul_seed >> 32) << 15;
-            int64_t ebx_sub = (int64_t)ebx_val - (int64_t)edx_seed_mul;
-            ebx_val = (ebx_sub < 0) ? 0 : (uint32_t)ebx_sub;
-            ebx_val &= 0x1ff0000;
-            bool cf_rcl = (ebx_val >> 24) & 1;
-            ebx_val = (ebx_val << 8) | (ebx_val >> 25);
-            ebx_val -= (cf_rcl ? 1 : 0);
-            uint32_t eax = ebx_val >> 24;
-            eax = (eax & 0xFF) * (eax & 0xFF);
-            eax = (uint32_t)((uint64_t)eax * eax) >> 16;
-            eax = (uint32_t)((uint64_t)eax * eax) >> 16;
-            eax &= 0xff00;
-            unsigned char v = (unsigned char)(eax >> 8);
-            *pCurrentPixel = (v << 24) | (v << 16) | (v << 8) | v;
+
+            const int32_t dxScaled = static_cast<int32_t>(static_cast<uint32_t>(dx) << scale);
+            const int32_t dyScaled = static_cast<int32_t>(static_cast<uint32_t>(dy) << scale);
+
+            const uint32_t distSq =
+                static_cast<uint32_t>(static_cast<int64_t>(dxScaled) * dxScaled) +
+                static_cast<uint32_t>(static_cast<int64_t>(dyScaled) * dyScaled);
+
+            uint32_t ebxVal = X86E::ClampedUnsignedSub(16777216u, distSq);
+
+            const uint32_t noiseHigh = X86E::MulHigh32(ebxVal, NOISE);
+            const bool carryFromNoiseMul = (noiseHigh != 0);
+
+            const uint32_t rotatedSeed = X86E::RotateLeftThroughCarry32(seed, 13, carryFromNoiseMul).value;
+            seed = rotatedSeed - (seed - 11);
+
+            const uint32_t seedMulHighShifted = X86E::MulHigh32(noiseHigh, seed) << 15;
+            ebxVal = X86E::ClampedSignedSub(ebxVal, seedMulHighShifted);
+
+            ebxVal &= 0x1ff0000u;
+            const X86E::RclResult rotated = X86E::RotateLeftThroughCarry32(ebxVal, 8, false);
+            ebxVal = rotated.value - (rotated.carryOut ? 1u : 0u);
+
+            uint32_t eax = ebxVal >> 24;
+            eax = eax * eax;
+            eax = static_cast<uint32_t>((static_cast<uint64_t>(eax) * eax) >> 16);
+            eax = static_cast<uint32_t>((static_cast<uint64_t>(eax) * eax) >> 16);
+            eax &= 0xff00u;
+
+            const uint8_t v = static_cast<uint8_t>(eax >> 8);
+            *pCurrentPixel = (uint32_t(v) << 24) | (uint32_t(v) << 16) | (uint32_t(v) << 8) | v;
 #endif
         }
     }
@@ -514,7 +535,12 @@ void Blob::Load()
 
     Restart();
 
-    blobShader = LoadShader("shaders/blob.vert", "shaders/blob.frag");
+    blobShader = LoadShaderFromMemory(
+#include "shaders/blob.vert.inl"
+    ,
+#include "shaders/blob.frag.inl"
+    );
+
     blobLoc_mvp = GetShaderLocation(blobShader, "mvp");
     blobLoc_eyePos = GetShaderLocation(blobShader, "eyePos");
     blobLoc_scaling = GetShaderLocation(blobShader, "scaling");
@@ -523,7 +549,12 @@ void Blob::Load()
     blobLoc_baseColor = GetShaderLocation(blobShader, "baseColor");
     blobLoc_ambientColor = GetShaderLocation(blobShader, "ambientColor");
 
-    blobletShader = LoadShader("shaders/bloblet.vert", "shaders/bloblet.frag");
+    blobletShader = LoadShaderFromMemory(
+#include "shaders/bloblet.vert.inl"
+    ,
+#include "shaders/bloblet.frag.inl"
+    );
+
     bloLoc_mvp = GetShaderLocation(blobletShader, "mvp");
     bloLoc_eyePos = GetShaderLocation(blobletShader, "eyePos");
     bloLoc_center = GetShaderLocation(blobletShader, "center");

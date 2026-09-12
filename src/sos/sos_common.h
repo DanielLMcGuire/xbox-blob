@@ -3,14 +3,15 @@
 #include <cstddef>
 #include <cstdint>
 
+namespace SOS 
+{
+
 constexpr int    SAMPLE_RATE      = 48000;
 constexpr int    SAMPLES_PER_TICK = 240;
 constexpr int    MAX_TRACKS       = 12;
 constexpr size_t MAX_LOOP_DEPTH   = 8;
 constexpr int    CONTROL_INTERVAL = 16;
 constexpr float  SOS_PI           = 3.14159265358979323846f;
-
-using ushort = int16_t;
 
 enum OpCode
 {
@@ -20,17 +21,25 @@ enum OpCode
     F_END = 15, F_FILTERINC = 16, F_FILTERSET = 17
 };
 
-#define note(pitch, dur)   F_NOTE, pitch, dur
-#define rest(dur)          F_REST, dur
-#define loop(n)            F_LOOP, n
-#define endloop            F_ENDLOOP
-#define patch(num)         F_PATCH, num
-#define volume(val)        F_VOLUME, val
-#define xpose(val)         F_XPOSE, val
-#define slur(pitch, dur)   F_SLUR, pitch, dur
-#define ring(dur)          F_RING, dur
-#define finc(f, res)       F_FILTERINC, f, res
-#define fset(f, res)       F_FILTERSET, f, res
+#define note(pitch, dur)   SOS::F_NOTE, pitch, dur
+#define rest(dur)          SOS::F_REST, dur
+#define loop(n)            SOS::F_LOOP, n
+#define endloop            SOS::F_ENDLOOP
+#define patch(num)         SOS::F_PATCH, num
+#define volume(val)        SOS::F_VOLUME, val
+#define xpose(val)         SOS::F_XPOSE, val
+#define slur(pitch, dur)   SOS::F_SLUR, pitch, dur
+#define ring(dur)          SOS::F_RING, dur
+#define finc(f, res)       SOS::F_FILTERINC, f, res
+#define fset(f, res)       SOS::F_FILTERSET, f, res
+
+enum PatchID
+{
+    PSIN1 = 0, PSAW1 = 1, PSQUARE = 2, PSAW2 = 3, PSAW3 = 4,
+    PNOISE1 = 5, PGLOCK = 6, PBUBBLE = 7, PFM = 8, PTHUNEL16 = 9, PREVTHUN = 10
+};
+
+}
 
 enum Pitches
 {
@@ -40,10 +49,4 @@ enum Pitches
     cc3=36, cs3=37, dd3=38, ds3=39, ee3=40, ff3=41, fs3=42, gg3=43, gs3=44, aa3=45, as3=46, bb3=47,
     cc4=48, cs4=49, dd4=50, ds4=51, ee4=52, ff4=53, fs4=54, gg4=55, gs4=56, aa4=57, as4=58, bb4=59,
     cc5=60, cs5=61, dd5=62, ds5=63, ee5=64, ff5=65, fs5=66, gg5=67, gs5=68, aa5=69, as5=70, bb5=71
-};
-
-enum PatchID
-{
-    PSIN1 = 0, PSAW1 = 1, PSQUARE = 2, PSAW2 = 3, PSAW3 = 4,
-    PNOISE1 = 5, PGLOCK = 6, PBUBBLE = 7, PFM = 8, PTHUNEL16 = 9, PREVTHUN = 10
 };

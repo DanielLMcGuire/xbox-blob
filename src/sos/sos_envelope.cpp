@@ -1,6 +1,9 @@
 #include "sos_envelope.h"
 #include <algorithm>
 
+namespace SOS 
+{
+
 void EnvelopeGenerator::setDesc(const DSENVELOPEDESC* desc, float sampleRate)
 {
     if (!desc)
@@ -78,7 +81,111 @@ float EnvelopeGenerator::processBlock(int stepSamples)
         level = sustainLevel;
         return level;
     }
+    if (stepSamples <= 0)
+    {
+        return level;
+    }
 
+#if defined(__GNUC__) || defined(__clang__)
+
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc99-designator"
+#pragma clang diagnostic ignored "-Wc99-extensions"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+#endif
+
+    static const void* const dispatchTable[] = {
+        [DELAY]   = &&lbl_DELAY,
+        [ATTACK]  = &&lbl_ATTACK,
+        [HOLD]    = &&lbl_HOLD,
+        [DECAY]   = &&lbl_DECAY,
+        [SUSTAIN] = &&lbl_SUSTAIN,
+        [RELEASE] = &&lbl_RELEASE,
+        [OFF]     = &&lbl_OFF,
+    };
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+
+    #define NEXT() \
+        do { \
+            if (--stepSamples <= 0) return level; \
+            goto *dispatchTable[state]; \
+        } while (0)
+
+    goto *dispatchTable[state];
+
+lbl_DELAY:
+    if (++count >= delaySamples) 
+    {
+        count = 0;
+        if (attackSamples > 0)      { state = ATTACK;  level = 0.0f; }
+        else if (holdSamples > 0)   { state = HOLD;    level = 1.0f; }
+        else if (decaySamples > 0)  { state = DECAY;   level = 1.0f; }
+        else                        { state = SUSTAIN; level = sustainLevel; }
+    }
+    NEXT();
+
+lbl_ATTACK:
+    count++;
+    level = (float)count / (float)attackSamples;
+    if (count >= attackSamples)
+    {
+        level = 1.0f;
+        count = 0;
+        if (holdSamples > 0)       { state = HOLD; }
+        else if (decaySamples > 0) { state = DECAY; }
+        else                       { state = SUSTAIN; level = sustainLevel; }
+    }
+    NEXT();
+
+lbl_HOLD:
+    level = 1.0f;
+    if (++count >= holdSamples)
+    {
+        count = 0;
+        if (decaySamples > 0) { state = DECAY; }
+        else                  { state = SUSTAIN; level = sustainLevel; }
+    }
+    NEXT();
+
+lbl_DECAY:
+    count++;
+    level = 1.0f - (1.0f - sustainLevel) * ((float)count / (float)decaySamples);
+    if (count >= decaySamples)
+    {
+        level = sustainLevel;
+        state = SUSTAIN;
+    }
+    NEXT();
+
+lbl_SUSTAIN:
+    level = sustainLevel;
+    NEXT();
+
+lbl_RELEASE:
+    count++;
+    level = releaseStart * (1.0f - ((float)count / (float)releaseSamples));
+    if (count >= releaseSamples)
+    {
+        level = 0.0f;
+        state = OFF;
+    }
+    NEXT();
+
+lbl_OFF:
+    level = 0.0f;
+    return 0.0f;
+
+    #undef NEXT
+
+#else
     for (int i = 0; i < stepSamples; ++i) 
     {
         switch (state) 
@@ -147,5 +254,8 @@ float EnvelopeGenerator::processBlock(int stepSamples)
             return 0.0f;
         }
     }
+#endif
+
     return level;
+}
 }
