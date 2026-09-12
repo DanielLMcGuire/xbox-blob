@@ -50,7 +50,11 @@ XboxStartup::XboxStartup(int argc, char** argv)
     noclip = new NoclipCamera();
 
     if (captureMode) driver->loop = false;
-    if (doAudio) audio = new SOS::Audio(false);
+    if (doAudio)
+    {
+        if (!captureMode) InitAudioDevice();
+        audio = new SOS::Audio(false);
+    }
 }
 
 XboxStartup::~XboxStartup()
@@ -67,7 +71,9 @@ XboxStartup::~XboxStartup()
     delete driver;
     delete noclip;
     delete audio;
-    
+
+    if (doAudio && !captureMode) CloseAudioDevice();
+
     CloseWindow();
 }
 

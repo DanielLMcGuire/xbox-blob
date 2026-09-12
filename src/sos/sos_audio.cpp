@@ -1,4 +1,3 @@
-#define MINIAUDIO_IMPLEMENTATION
 #include "sos_audio.h"
 
 #include <algorithm>
@@ -8,30 +7,24 @@
 namespace SOS 
 {
 
+Audio* Audio::s_activeInstance = nullptr;
+
 bool Audio::init()
 {
     if (initialized) return true;
+    if (!IsAudioDeviceReady()) return false;
 
-    ma_device_config config = ma_device_config_init(ma_device_type_playback);
-    config.playback.format   = ma_format_f32;
-    config.playback.channels = 2;
-    config.sampleRate        = 48000;
-    config.dataCallback      = dataCallback;
-    config.pUserData         = this;
+    stream = LoadAudioStream(48000, 32, 2);
+    if (!IsAudioStreamValid(stream)) return false;
 
-    if (ma_device_init(nullptr, &config, &device) != MA_SUCCESS) {
-        return false;
-    }
-
-    sequencer.setSampleRate(static_cast<float>(device.sampleRate));
+    sequencer.setSampleRate(static_cast<float>(stream.sampleRate));
     sequencer.startBootSound();
 
+    s_activeInstance = this;
+    SetAudioStreamCallback(stream, dataCallback);
+
     initialized = true;
-    if (ma_device_start(&device) != MA_SUCCESS) {
-        ma_device_uninit(&device);
-        initialized = false;
-        return false;
-    }
+    PlayAudioStream(stream);
     return true;
 }
 
@@ -39,15 +32,17 @@ void Audio::restart()
 {
     if (!initialized) return;
 
-    ma_device_stop(&device);
+    StopAudioStream(stream);
     sequencer.startBootSound();
-    ma_device_start(&device);
+    PlayAudioStream(stream);
 }
 
 void Audio::deinit()
 {
     if (initialized) {
-        ma_device_uninit(&device);
+        StopAudioStream(stream);
+        UnloadAudioStream(stream);
+        if (s_activeInstance == this) s_activeInstance = nullptr;
         initialized = false;
     }
 }
@@ -57,49 +52,44 @@ bool Audio::exportWav(const char* filename, double durationSeconds, uint32_t sam
     if (!filename || durationSeconds <= 0.0 || sampleRate == 0)
         return false;
 
-    const ma_uint64 totalFrames = static_cast<ma_uint64>(durationSeconds * sampleRate);
+    const uint32_t totalFrames = static_cast<uint32_t>(durationSeconds * sampleRate);
     Sequencer exportSeq;
     exportSeq.setSampleRate(static_cast<float>(sampleRate));
     exportSeq.startBootSound();
 
-    ma_encoder_config encoderConfig = ma_encoder_config_init(
-        ma_encoding_format_wav, ma_format_s16, 2, sampleRate
-    );
+    constexpr uint32_t BLOCK = 4096;
+    std::vector<int16_t> pcmBuf(static_cast<size_t>(totalFrames) * 2);
+    std::vector<float> fBuf(static_cast<size_t>(BLOCK) * 2);
 
-    ma_encoder encoder{};
-    if (ma_encoder_init_file(filename, &encoderConfig, &encoder) != MA_SUCCESS)
-        return false;
-
-    constexpr ma_uint64 BLOCK = 4096;
-    std::vector<float> fBuf(BLOCK * 2);
-    std::vector<int16_t> pcmBuf(BLOCK * 2);
-    ma_uint64 remaining = totalFrames;
-
-    while (remaining > 0) {
-        ma_uint64 toRender = std::min<ma_uint64>(remaining, BLOCK);
+    uint32_t framesWritten = 0;
+    while (framesWritten < totalFrames)
+    {
+        uint32_t toRender = std::min(totalFrames - framesWritten, BLOCK);
         exportSeq.render(fBuf.data(), static_cast<int>(toRender));
 
-        for (ma_uint64 i = 0; i < toRender * 2; ++i)
-            pcmBuf[i] = static_cast<int16_t>(std::lrintf(std::clamp(fBuf[i], -1.0f, 1.0f) * 32767.0f));
-
-        ma_uint64 written = 0;
-        if (ma_encoder_write_pcm_frames(&encoder, pcmBuf.data(), toRender, 
-            &written) != MA_SUCCESS || written == 0)
+        for (uint32_t i = 0; i < toRender * 2; ++i)
         {
-            ma_encoder_uninit(&encoder);
-            return false;
+            pcmBuf[static_cast<size_t>(framesWritten) * 2 + i] =
+                static_cast<int16_t>(std::lrintf(std::clamp(fBuf[i], -1.0f, 1.0f) * 32767.0f));
         }
-        remaining -= written;
+
+        framesWritten += toRender;
     }
 
-    ma_encoder_uninit(&encoder);
-    return true;
+    Wave wave{};
+    wave.frameCount = totalFrames;
+    wave.sampleRate = sampleRate;
+    wave.sampleSize = 16;
+    wave.channels   = 2;
+    wave.data       = pcmBuf.data();
+
+    return ExportWave(wave, filename);
 }
 
-void Audio::dataCallback(ma_device* pDevice, void* pOutput, const void*, ma_uint32 frameCount)
+void Audio::dataCallback(void *bufferData, unsigned int frames)
 {
-    auto* audio = static_cast<Audio*>(pDevice->pUserData);
-    if (audio && pOutput && frameCount > 0)
-        audio->sequencer.render(static_cast<float*>(pOutput), static_cast<int>(frameCount));
+    if (s_activeInstance && bufferData && frames > 0)
+        s_activeInstance->sequencer.render(static_cast<float*>(bufferData), static_cast<int>(frames));
 }
+
 }

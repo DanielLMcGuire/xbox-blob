@@ -2,18 +2,7 @@
 
 #include <cstdint>
 
-#ifdef _WIN32
-#define NOMINMAX
-#define Rectangle Win32Rectangle
-#define CloseWindow Win32CloseWindow
-#define ShowCursor Win32ShowCursor
-#endif
-#include "../../thirdparty/miniaudio.h"
-#ifdef _WIN32
-#undef Rectangle
-#undef CloseWindow
-#undef ShowCursor
-#endif
+#include "raylib.h"
 
 #include "sos_sequencer.h"
 
@@ -34,11 +23,13 @@ public:
     bool exportWav(const char* filename, double durationSeconds, uint32_t sampleRate = 48000);
 
 private:
-    static void dataCallback(ma_device* pDevice, void* pOutput, const void*, ma_uint32 frameCount);
+    static void dataCallback(void *bufferData, unsigned int frames);
 
     Sequencer sequencer;
-    ma_device device{};
+    AudioStream stream{};
     bool initialized = false;
+
+    static Audio* s_activeInstance;
 };
 
 }
