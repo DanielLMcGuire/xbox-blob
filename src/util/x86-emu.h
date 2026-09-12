@@ -1,6 +1,16 @@
 #pragma once
 #include <cstdint>
 
+#if defined(_MSC_VER)
+    #if defined(_M_IX86)
+        #define HAS_VC_X86
+    #elif defined(__x86_64__)
+        #define HAS_VC_X64
+    #endif
+#elif defined(__i386__) || defined(__x86_64__)
+    #define HAS_GNU_X86
+#endif
+
 namespace X86E
 {
     constexpr uint32_t MulHigh32(uint32_t a, uint32_t b)

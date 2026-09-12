@@ -30,6 +30,8 @@ FetchContent_MakeAvailable(raylib)
 add_executable(xbox_startup
     src/main.cpp
     src/blob/blob.cpp
+    src/blob/blob_bump.cpp
+    src/blob/bloblet.cpp
     src/sos/sos_audio.cpp
     src/sos/sos_envelope.cpp
     src/sos/sos_sequencer.cpp
