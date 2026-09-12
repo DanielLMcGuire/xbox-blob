@@ -28,13 +28,20 @@ set(BUILD_GAMES OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(raylib)
 
 add_executable(xbox_startup
-    src/main.cpp
     src/blob/blob.cpp
     src/blob/blob_bump.cpp
     src/blob/bloblet.cpp
+    src/blob/blob_texgen.cpp
+    src/blob/intensity_driver.cpp
+    
     src/sos/sos_audio.cpp
     src/sos/sos_envelope.cpp
     src/sos/sos_sequencer.cpp
+     
+    src/util/noclip.cpp
+
+    src/app.cpp
+    src/main.cpp
 )
 
 target_link_libraries(xbox_startup PRIVATE raylib)

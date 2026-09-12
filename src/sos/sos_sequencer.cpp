@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
-#include "tracks.h"
+#include "tracks.inl"
 #include "samples/samples.h"
 
 #ifndef SOS_PI

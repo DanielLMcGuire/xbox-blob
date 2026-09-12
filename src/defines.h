@@ -1,6 +1,7 @@
 #pragma once
 
 constexpr float DEMO_TOTAL_TIME = 8.0f;
+constexpr double DOUBLE_CLICK_TIME = 0.3f;
 
 constexpr float BLOB_STATIC_END_TIME = 0.6f;
 constexpr float BLOB_ZERO_INTENSE_END_TIME = BLOB_STATIC_END_TIME + 0.5f;

@@ -38,9 +38,7 @@ namespace X86E
     }
 
     constexpr uint32_t ClampedUnsignedSub(uint32_t a, uint32_t b)
-    {
-        return (a >= b) ? (a - b) : 0u;
-    }
+    { return (a >= b) ? (a - b) : 0u; }
 
     constexpr uint32_t ClampedSignedSub(uint32_t a, uint32_t b)
     {

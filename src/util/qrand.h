@@ -14,13 +14,13 @@ public:
     void Init(int32_t initSeed) { seed = initSeed; }
     void SetSeed(int32_t newSeed) { seed = newSeed; }
 
-    int32_t Rand()
+    inline int32_t Rand()
     {
         uint32_t s = static_cast<uint32_t>(seed);
         return seed = static_cast<int32_t>(std::rotr(s, 13) - (s - 11));
     }
 
-    int32_t Rand(int32_t scale)
+    inline int32_t Rand(int32_t scale)
     {
         uint32_t s = static_cast<uint32_t>(seed);
         s = std::rotr(s, 13) - (s - 11);

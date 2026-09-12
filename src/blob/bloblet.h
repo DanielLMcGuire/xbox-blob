@@ -18,7 +18,7 @@ struct Bloblet
     float wobble = 1.0f;
     float wobbleDirection = 0.0f;
 
-    void Init() { wobble = 1.0f; wobbleDirection = 0.0f; }
+    inline void Init() { wobble = 1.0f; wobbleDirection = 0.0f; }
 
     bool Update(float elapsedTime, float dt);
 };

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include "ds_envelope.h"
+#include "../../thirdparty/DirectSoundEnvelope.h"
 
 
 namespace SOS {

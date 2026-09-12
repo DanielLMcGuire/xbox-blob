@@ -7,7 +7,7 @@ struct Bloblet;
 class BlobBump
 {
 public:
-    void Init() { myBloblet = nullptr; }
+    inline void Init() { myBloblet = nullptr; }
 
     bool Create(float curTime, Bloblet* bloblet);
 
