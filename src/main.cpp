@@ -132,7 +132,7 @@ int main()
 {
     constexpr int screenWidth = 960;
     constexpr int screenHeight = 720;
-    constexpr float distance = 25.0f;
+    constexpr float distance = 35.0f;
     constexpr float fov = 45.0f;
 
 #ifndef FRAMERATE
@@ -211,7 +211,7 @@ int main()
 {
     constexpr int screenWidth = 1000;
     constexpr int screenHeight = 1000;
-    constexpr float distance = 25.0f;
+    constexpr float distance = 45.0f;
     constexpr float fov = 45.0f;
     constexpr float fixedDt = 1.0f / CAPTURE_FRAMERATE;
 
