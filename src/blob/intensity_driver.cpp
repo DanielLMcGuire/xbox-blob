@@ -39,7 +39,9 @@ bool BlobIntensityDriver::Advance(float dt, Blob& blob)
         iidt = 0.0f;
         smoothedIntensity = intensity = baseIntensity = DEMO_START_INTENSITY;
         timeElapsed = 0.0f;
+        rng.SetSeed(startSeed);
         InitPulses();
+        BlobSetRandomSeed(startSeed);
         blob.Restart();
     }
 

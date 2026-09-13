@@ -6,7 +6,7 @@
 class BlobIntensityDriver
 {
 public:
-    BlobIntensityDriver() { Init(); }
+    BlobIntensityDriver(int32_t seed = defSeed) : rng(seed), startSeed(seed) { Init(); }
 
     void Init();
     bool Advance(float dt, Blob& blob);
@@ -23,6 +23,7 @@ private:
     Vector3 pulses[NUM_PULSES]{};
 
     QRand rng;
+    int32_t startSeed = defSeed;
     float timeElapsed = 0.0f;
     float baseIntensity = 0.0f;
     float intensity = 0.0f;

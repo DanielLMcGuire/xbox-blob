@@ -34,6 +34,7 @@ private:
     bool msaaEnabled = false;
     bool gridEnabled = false;
     bool wireframeMode = false;
+    int32_t seed = defSeed;
 
     int screenWidth = 960;
     int screenHeight = 720;

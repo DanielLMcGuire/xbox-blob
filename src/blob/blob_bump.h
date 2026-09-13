@@ -1,6 +1,7 @@
 #pragma once
 
 #include "raylib.h"
+#include <cstdint>
 
 struct Bloblet;
 
@@ -31,3 +32,4 @@ private:
 
 float BlobRandom01();
 float BlobRandom11();
+void BlobSetRandomSeed(int32_t seed);

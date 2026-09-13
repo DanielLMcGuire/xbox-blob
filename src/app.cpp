@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <filesystem>
 #include <iostream>
+#include <cinttypes>
 
 #if defined(_WIN32)
     #undef DrawText
@@ -54,8 +55,10 @@ XboxStartup::XboxStartup(int argc, char** argv)
     homeCamera = camera;
     lastClickTime = -DOUBLE_CLICK_TIME;
 
+    BlobSetRandomSeed(seed);
+
     blob = new Blob();
-    driver = new BlobIntensityDriver();
+    driver = new BlobIntensityDriver(seed);
     noclip = new NoclipCamera();
 
 #ifdef HAS_EMBED
@@ -135,6 +138,9 @@ void XboxStartup::parseArgs(int argc, char** argv)
         else if (arg == "-m" || arg == "--msaa") msaaEnabled = true;
         else if (arg == "-g" || arg == "--grid") gridEnabled = true;
         else if (arg == "-w" || arg == "--wireframe") wireframeMode = true;
+        else if (arg == "-s" || arg == "--seed") {
+            if (i + 1 < argc) seed = static_cast<int32_t>(std::stoul(argv[++i], nullptr, 16));
+        }
         else if (arg == "--help" || arg == "-h" || arg == "/?")
         {
             std::string program = std::filesystem::path(argv[0]).stem().string(); 
@@ -146,8 +152,11 @@ void XboxStartup::parseArgs(int argc, char** argv)
                         "  %s -df, --draw-fps    Draw FPS to screen\n"
                         "  %s -m, --msaa         Enable MSAA (Antialiasing)\n"
                         "  %s -g, --grid         Show 3D grid\n"
-                        "  %s -w, --wireframe    Enable wireframe mode on startup",
-            program.c_str(), program.c_str(), program.c_str(), program.c_str(), program.c_str(), program.c_str(), program.c_str(), program.c_str(), program.c_str()
+                        "  %s -w, --wireframe    Enable wireframe mode on startup\n"
+                        "  %s -s, --seed         Set the RNG seed (hex, e.g. %#08" PRIx32 ")",
+            program.c_str(), program.c_str(), program.c_str(), program.c_str(), 
+            program.c_str(), program.c_str(), program.c_str(), program.c_str(), 
+            program.c_str(), program.c_str(), defSeed
             ));
             std::exit(0);
         }

@@ -28,6 +28,11 @@ float BlobRandom11()
     return (float)(g_BlobRand.Rand() & LLI_RAND_MASK) * mul - 1.0f;
 }
 
+void BlobSetRandomSeed(int32_t seed)
+{
+    g_BlobRand.SetSeed(seed);
+}
+
 void BlobBump::RecalculateFacesOfInterest()
 {
     facesOfInterest =
