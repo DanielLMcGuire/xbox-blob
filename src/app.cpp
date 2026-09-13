@@ -1,5 +1,6 @@
 #include "app.h"
 #include "util/fullscreen.h"
+#include "util/embed.h"
 #include "rlgl.h"
 
 #include <cstdio>
@@ -8,26 +9,6 @@
 
 #if defined(_WIN32)
     #undef DrawText
-#endif
-
-#if defined(__cpp_pp_embed) && __cpp_pp_embed >= 202502L
-#ifdef __has_embed
-    #define HAS_EMBED 2
-#else
-    #define HAS_EMBED 1
-#endif
-#elif defined(__has_extension)
-    #if __has_extension(c_embed)
-        #ifdef __has_embed
-            #define HAS_EMBED 2
-        #else
-            #define HAS_EMBED 1
-        #endif
-    #else
-        #define HAS_EMBED 0
-    #endif
-#else
-    #define HAS_EMBED 0
 #endif
 
 XboxStartup::XboxStartup(int argc, char** argv)
@@ -43,6 +24,7 @@ XboxStartup::XboxStartup(int argc, char** argv)
 
         std::filesystem::create_directories("frames");
 
+        SetConfigFlags(FLAG_MSAA_4X_HINT);
         InitWindow(screenWidth, screenHeight, "Xbox Startup | Rendering...");
         camera = { { 0.0f, distance, -6.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, fov, CAMERA_PERSPECTIVE };
         if (framerate == 0) framerate = 240; 
@@ -78,12 +60,16 @@ XboxStartup::XboxStartup(int argc, char** argv)
         #endif
     #endif
 
+#ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wc23-extensions"
+#endif
     static constexpr unsigned char font_data[] = {
         #embed "../assets/xbox.ttf"
     };
+#ifdef __clang__
 #pragma clang diagnostic pop
+#endif
 
     static constexpr int font_data_size = sizeof(font_data);
     font = LoadFontFromMemory(
@@ -94,8 +80,10 @@ XboxStartup::XboxStartup(int argc, char** argv)
         nullptr,
         0
     );
-
+#else
+    font = LoadFont("../assets/xbox.ttf");
 #endif
+    if (!IsFontValid(font)) font = GetFontDefault();
     fontSpacing = 2.0f;
 
     if (captureMode) driver->loop = false;
