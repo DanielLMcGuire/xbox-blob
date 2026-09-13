@@ -2,13 +2,23 @@
 #include "raylib.h"
 #include "rlgl.h"
 
-static void DrawGrid3D(int slices, float spacing)
+#define rlColor(color) rlColor4f( \
+        color.r / 255.0f, \
+        color.g / 255.0f, \
+        color.b / 255.0f, \
+        color.a / 255.0f \
+    )
+
+namespace Grid
+{
+
+inline static void Draw3D(int slices, float spacing, Color color)
 {
     int half = slices / 2;
     float extent = (float)half * spacing;
 
     rlBegin(RL_LINES);
-        rlColor3f(1.0f, 1.0f, 1.0f);
+        rlColor(color);
 
         for (int i = -half; i <= half; i++)
         {
@@ -28,4 +38,6 @@ static void DrawGrid3D(int slices, float spacing)
             }
         }
     rlEnd();
+}
+
 }

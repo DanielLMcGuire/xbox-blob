@@ -32,6 +32,8 @@ private:
     int framerate = 0;
     bool drawFps = false;
     bool msaaEnabled = false;
+    bool gridEnabled = false;
+    bool wireframeMode = false;
 
     int screenWidth = 960;
     int screenHeight = 720;

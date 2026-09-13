@@ -22,11 +22,11 @@ public:
     void Render(const Camera3D& camera, float pulseIntensity, float blobIntensity,
                 float baseBlobIntensity, float elapsedTime);
 
-    float GetRadius() const { return radius; }
-    Vector3 GetCenter() const { return position; }
+    inline float GetRadius() const { return radius; }
+    inline Vector3 GetCenter() const { return position; }
 
     void GetLightForPosition(Vector3 queryPosition, Vector3* outLightPos, float* outIntensity) const;
-    float GetLightIntensity() const { return lightIntensity; }
+    inline float GetLightIntensity() const { return lightIntensity; }
 
     Vector4 color{ 0.25f, 1.0f, 0.15f, 1.0f };
     Vector3 position{ 0, 0, 0 };

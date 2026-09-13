@@ -13,7 +13,7 @@
 
 namespace X86E
 {
-    constexpr uint32_t MulHigh32(uint32_t a, uint32_t b)
+    inline constexpr uint32_t MulHigh32(uint32_t a, uint32_t b)
     {
         return static_cast<uint32_t>((static_cast<uint64_t>(a) * b) >> 32);
     }
@@ -24,7 +24,7 @@ namespace X86E
         bool carryOut;
     };
 
-    constexpr RclResult RotateLeftThroughCarry32(uint32_t value, int count, bool carryIn)
+    inline constexpr RclResult RotateLeftThroughCarry32(uint32_t value, int count, bool carryIn)
     {
         count %= 33;
         if (count == 0)
@@ -37,10 +37,10 @@ namespace X86E
         return { static_cast<uint32_t>(rotated & 0xFFFFFFFFu), ((rotated >> 32) & 1u) != 0 };
     }
 
-    constexpr uint32_t ClampedUnsignedSub(uint32_t a, uint32_t b)
+    inline constexpr uint32_t ClampedUnsignedSub(uint32_t a, uint32_t b)
     { return (a >= b) ? (a - b) : 0u; }
 
-    constexpr uint32_t ClampedSignedSub(uint32_t a, uint32_t b)
+    inline constexpr uint32_t ClampedSignedSub(uint32_t a, uint32_t b)
     {
         const auto signedA = static_cast<int32_t>(a);
         const auto signedB = static_cast<int32_t>(b);

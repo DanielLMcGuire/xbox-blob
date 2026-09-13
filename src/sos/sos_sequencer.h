@@ -15,6 +15,13 @@ namespace SOS
 
 class Sequencer
 {
+public:
+    Sequencer() { initPatches(); initPanning(); }
+
+    void setSampleRate(float sr);
+    void startBootSound();
+    void render(float* output, int frameCount);
+
 private:
     Patch patches[11];
     Voice voices[MAX_TRACKS];
@@ -30,13 +37,6 @@ private:
     void initPatches();
     void initPanning();
     void tick();
-
-public:
-    Sequencer();
-
-    void setSampleRate(float sr);
-    void startBootSound();
-    void render(float* output, int frameCount);
 };
 
 }

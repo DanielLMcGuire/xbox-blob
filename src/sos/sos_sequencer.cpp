@@ -9,12 +9,6 @@
 namespace SOS 
 {
 
-Sequencer::Sequencer()
-{
-    initPatches();
-    initPanning();
-}
-
 void Sequencer::initPatches()
 {
     patches[PSIN1].sample.data.resize(128);

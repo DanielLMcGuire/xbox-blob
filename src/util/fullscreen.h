@@ -1,7 +1,10 @@
 #pragma once
 #include "raylib.h"
 
-inline static void ToggleExclusiveFullscreen(int windowedWidth, int windowedHeight)
+namespace Fullscreen
+{
+
+inline static void Toggle(int windowedWidth, int windowedHeight)
 {
     if (!IsWindowFullscreen())
     {
@@ -13,4 +16,6 @@ inline static void ToggleExclusiveFullscreen(int windowedWidth, int windowedHeig
 
     if (!IsWindowFullscreen())
         SetWindowSize(windowedWidth, windowedHeight);
+}
+
 }

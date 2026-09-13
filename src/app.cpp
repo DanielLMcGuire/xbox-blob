@@ -2,6 +2,7 @@
 #include "util/fullscreen.h"
 #include "util/embed.h"
 #include "util/grid.h"
+#include "util/text_solvers.h"
 #include "rlgl.h"
 
 #include <cstdio>
@@ -11,6 +12,8 @@
 #if defined(_WIN32)
     #undef DrawText
 #endif
+
+#define TOGGLE(x) do { if (x) { x = false; } else { x = true; } } while(0)
 
 XboxStartup::XboxStartup(int argc, char** argv)
 {
@@ -43,7 +46,7 @@ XboxStartup::XboxStartup(int argc, char** argv)
         InitWindow(screenWidth, screenHeight, "Xbox Startup");
         
         if (framerate > 0) SetTargetFPS(framerate);
-        if (fullscreen) ToggleExclusiveFullscreen(screenWidth, screenHeight);
+        if (fullscreen) Fullscreen::Toggle(screenWidth, screenHeight);
 
         camera = { { 0.0f, distance, -6.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, fov, CAMERA_PERSPECTIVE };
     }
@@ -128,11 +131,10 @@ void XboxStartup::parseArgs(int argc, char** argv)
         else if (arg == "-f" || arg == "--fps") {
             if (i + 1 < argc) framerate = std::stoi(argv[++i]);
         }
-        else if (arg == "--draw-fps") drawFps = true;
-        else if (arg == "-m" || arg == "--msaa")
-        {
-            msaaEnabled = true;
-        }
+        else if (arg == "-df" || arg == "--draw-fps") drawFps = true;
+        else if (arg == "-m" || arg == "--msaa") msaaEnabled = true;
+        else if (arg == "-g" || arg == "--grid") gridEnabled = true;
+        else if (arg == "-w" || arg == "--wireframe") wireframeMode = true;
         else if (arg == "--help" || arg == "-h" || arg == "/?")
         {
             std::string program = std::filesystem::path(argv[0]).stem().string(); 
@@ -141,9 +143,11 @@ void XboxStartup::parseArgs(int argc, char** argv)
                         "  %s -fs, --fullscreen  Enter fullscreen on startup\n"
                         "  %s -na, --no-audio    Disable audio\n"
                         "  %s -f, --fps          Set framerate (VSYNC if not set)\n"
-                        "  %s --draw-fps         Draw FPS to screen\n"
-                        "  %s -m, --msaa         Enable MSAA (Antialiasing)",
-            program.c_str(), program.c_str(), program.c_str(), program.c_str(), program.c_str(), program.c_str(), program.c_str()
+                        "  %s -df, --draw-fps    Draw FPS to screen\n"
+                        "  %s -m, --msaa         Enable MSAA (Antialiasing)\n"
+                        "  %s -g, --grid         Show 3D grid\n"
+                        "  %s -w, --wireframe    Enable wireframe mode on startup",
+            program.c_str(), program.c_str(), program.c_str(), program.c_str(), program.c_str(), program.c_str(), program.c_str(), program.c_str(), program.c_str()
             ));
             std::exit(0);
         }
@@ -167,16 +171,13 @@ void XboxStartup::updateInteractive()
 {
     const float dt = GetFrameTime();
 
-    if (IsKeyPressed(KEY_F11) || ((IsKeyDown(KEY_LEFT_ALT) || IsKeyDown(KEY_RIGHT_ALT)) && IsKeyPressed(KEY_ENTER)))
-        ToggleExclusiveFullscreen(screenWidth, screenHeight);
-
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
     {
         const double now = GetTime();
 
         if (now - lastClickTime < DOUBLE_CLICK_TIME)
         {
-            ToggleExclusiveFullscreen(screenWidth, screenHeight);
+            Fullscreen::Toggle(screenWidth, screenHeight);
             lastClickTime = 0.0;
         }
         else
@@ -185,7 +186,16 @@ void XboxStartup::updateInteractive()
         }
     }
 
+    if (IsKeyPressed(KEY_F11) || ((IsKeyDown(KEY_LEFT_ALT) || IsKeyDown(KEY_RIGHT_ALT)) && IsKeyPressed(KEY_ENTER)))
+        Fullscreen::Toggle(screenWidth, screenHeight);
+
     if (IsKeyPressed(KEY_F5)) noclip->Toggle(camera, homeCamera);
+
+    if (IsKeyPressed(KEY_F2)) TOGGLE(drawFps);
+
+    if (IsKeyPressed(KEY_F6)) TOGGLE(wireframeMode);
+
+    if (IsKeyPressed(KEY_F7)) TOGGLE(gridEnabled);
 
     noclip->Update(camera, dt);
 
@@ -202,26 +212,30 @@ void XboxStartup::updateInteractive()
     BeginDrawing();
     ClearBackground(BLACK);
 
+    if (wireframeMode)
+        rlEnableWireMode(); 
+
+    if (gridEnabled) {
+        BeginMode3D(camera);
+        Grid::Draw3D(10, 50, { 255, 255, 255, 255 });
+        EndMode3D();
+    }
 
     if (currentElapsedTime >= BLOB_STATIC_END_TIME)
     {
         BeginMode3D(camera);
-#ifdef _DEBUG
-        DrawGrid3D(10, 50);
-#endif
         blob->Render(camera, driver->GetPulseIntensity(), driver->GetIntensity(), driver->GetBaseIntensity(), currentElapsedTime);
         EndMode3D();
     }
 
-    constexpr auto solveBottomText = [](Font font, float fontSpacing, float padding) -> float {
-        return static_cast<float>(GetScreenHeight()) - (font.baseSize + fontSpacing + padding);
-    };
+    if (wireframeMode)
+        rlDisableWireMode();
 
     if (drawFps)
         DrawTextEx(
             font, 
             TextFormat("FPS: %i", GetFPS()), 
-            Vector2{ 20, 20 }, 
+            Vector2{ 10, 10 }, 
             font.baseSize,
             fontSpacing,
             XD_TEXT_FOREGROUND
@@ -234,7 +248,7 @@ void XboxStartup::updateInteractive()
                 camera.position.x,
                 camera.position.y,
                 camera.position.z),
-            Vector2{ 10, solveBottomText(font, fontSpacing, 10) },
+            Vector2{ 10, TextSolve::solveBottomText(font, fontSpacing, 10) },
             font.baseSize,
             fontSpacing,
             XD_TEXT_FOREGROUND);
@@ -255,12 +269,18 @@ void XboxStartup::updateCapture()
     BeginDrawing();
     ClearBackground(BLACK);
 
+    if (wireframeMode)
+        rlEnableWireMode();
+
     if (driver->GetElapsedTime() >= BLOB_STATIC_END_TIME)
     {
         BeginMode3D(camera);
         blob->Render(camera, driver->GetPulseIntensity(), driver->GetIntensity(), driver->GetBaseIntensity(), driver->GetElapsedTime());
         EndMode3D();
     }
+
+    if (wireframeMode)
+        rlDisableWireMode();
 
     EndDrawing();
 
