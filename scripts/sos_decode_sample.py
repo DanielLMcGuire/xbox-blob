@@ -49,8 +49,6 @@ def main():
         pcm16 = to_pcm16(raw, xor)
         out_path = out_dir / (Path(name).stem + ".wav")
         write_wav(out_path, pcm16, args.rate)
-        print(f"{name}: {len(raw)} samples -> {out_path} "
-              f"({len(raw)/args.rate:.3f}s @ {args.rate} Hz, xor={xor})")
 
 if __name__ == "__main__":
     main()

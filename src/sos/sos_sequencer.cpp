@@ -4,7 +4,7 @@
 #include <cmath>
 
 #include "tracks.inl"
-#include "samples/samples.h"
+#include "samples.h"
 
 namespace SOS 
 {

@@ -5,6 +5,8 @@ project(xbox_blob_raylib CXX)
 set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+
 include(FetchContent)
 
 set(FETCHCONTENT_QUIET FALSE)
@@ -27,7 +29,24 @@ set(BUILD_GAMES OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(raylib)
 
+set(ASSETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/assets")
+set(SOUND_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/sound")
+
+file(GLOB_RECURSE WAV_ASSETS CONFIGURE_DEPENDS "${ASSETS_DIR}/*.wav")
+
+add_custom_command(
+    OUTPUT "${SOUND_OUT_DIR}/samples.h"
+    COMMAND Python3::Interpreter "${CMAKE_CURRENT_SOURCE_DIR}/scripts/sos_encode_sample.py"
+            --wav-dir "${ASSETS_DIR}"
+            --out-dir "${SOUND_OUT_DIR}"
+    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/scripts/sos_encode_sample.py" ${WAV_ASSETS}
+    COMMENT "Encoding audio..."
+    VERBATIM
+)
+
 add_executable(xbox_startup
+    "${SOUND_OUT_DIR}/samples.h"
+
     src/blob/blob.cpp
     src/blob/blob_bump.cpp
     src/blob/bloblet.cpp
@@ -45,6 +64,8 @@ add_executable(xbox_startup
 )
 
 target_link_libraries(xbox_startup PRIVATE raylib)
+
+target_include_directories(xbox_startup PRIVATE "${SOUND_OUT_DIR}")
 
 if (APPLE)
     target_link_libraries(xbox_startup PRIVATE

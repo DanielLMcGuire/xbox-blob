@@ -10,6 +10,14 @@ XOR_STEM_MAP = {
     "thunel16": False,
 }
 
+ARRAY_NAME_MAP = {
+    "thunel16": "ThunEl16Data",
+    "glock": "GlockData",
+    "bubble": "BubbleData",
+}
+
+HEADER_NAME = "samples.h"
+
 BYTES_PER_LINE = 16
 
 def read_mono_samples(path: Path):
@@ -51,6 +59,17 @@ def format_c_array_body(data: bytes) -> str:
         lines.append(line + "\r\n")
     return "".join(lines)
 
+def write_header(out_dir: Path, entries: list[tuple[str, str]]) -> Path:
+    lines = ["#pragma once", ""]
+    for array_name, pcm_name in entries:
+        lines.append(f"inline constexpr unsigned char {array_name}[] = {{")
+        lines.append(f'    #include "{pcm_name}"')
+        lines.append("};")
+    header_path = out_dir / HEADER_NAME
+    header_path.write_text("\n".join(lines) + "\n")
+    return header_path
+
+
 def resolve_xor(stem: str, override: bool | None) -> bool:
     if override is not None:
         return override
@@ -88,6 +107,8 @@ def main():
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    generated = {}
+
     for wav_path in wav_paths:
         if not wav_path.exists():
             print(f"skip: {wav_path} not found")
@@ -103,7 +124,18 @@ def main():
         out_path = out_dir / out_name
         out_path.write_text(format_c_array_body(raw), newline="")
 
-        print(f"{wav_path.name}: {len(raw)} samples -> {out_path} (xor={xor})")
+        generated[stem.lower()] = out_name
+
+    header_entries = [
+        (ARRAY_NAME_MAP[stem], generated[stem])
+        for stem in ARRAY_NAME_MAP
+        if stem in generated
+    ]
+    if len(header_entries) == len(ARRAY_NAME_MAP):
+        header_path = write_header(out_dir, header_entries)
+    elif generated:
+        print("skip: samples.h not (re)generated, missing "
+              f"{sorted(set(ARRAY_NAME_MAP) - set(generated))}")
 
 if __name__ == "__main__":
     main()
