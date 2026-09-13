@@ -31,6 +31,7 @@ private:
     bool doAudio = true;
     int framerate = 0;
     bool drawFps = false;
+    bool msaaEnabled = false;
 
     int screenWidth = 960;
     int screenHeight = 720;

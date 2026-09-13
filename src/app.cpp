@@ -23,8 +23,8 @@ XboxStartup::XboxStartup(int argc, char** argv)
         float distance = 45.0f;
 
         std::filesystem::create_directories("frames");
-
-        SetConfigFlags(FLAG_MSAA_4X_HINT);
+        if (msaaEnabled)
+            SetConfigFlags(FLAG_MSAA_4X_HINT);
         InitWindow(screenWidth, screenHeight, "Xbox Startup | Rendering...");
         camera = { { 0.0f, distance, -6.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, fov, CAMERA_PERSPECTIVE };
         if (framerate == 0) framerate = 240; 
@@ -35,7 +35,10 @@ XboxStartup::XboxStartup(int argc, char** argv)
         screenHeight = 720;
         float distance = 35.0f;
 
-        if (framerate == 0) SetConfigFlags(FLAG_VSYNC_HINT);
+        unsigned int cfg = FLAG_WINDOW_RESIZABLE;
+        if (framerate == 0) cfg |= FLAG_VSYNC_HINT;
+        if (msaaEnabled) cfg |= FLAG_MSAA_4X_HINT;
+        SetConfigFlags(cfg);
         InitWindow(screenWidth, screenHeight, "Xbox Startup");
         
         if (framerate > 0) SetTargetFPS(framerate);
@@ -126,6 +129,10 @@ void XboxStartup::parseArgs(int argc, char** argv)
             if (i + 1 < argc) framerate = std::stoi(argv[++i]);
         }
         else if (arg == "--draw-fps") drawFps = true;
+        else if (arg == "-m" || arg == "--msaa")
+        {
+            msaaEnabled = true;
+        }
         else if (arg == "--help" || arg == "-h" || arg == "/?")
         {
             std::string program = std::filesystem::path(argv[0]).stem().string(); 
@@ -134,8 +141,9 @@ void XboxStartup::parseArgs(int argc, char** argv)
                         "  %s -fs, --fullscreen  Enter fullscreen on startup\n"
                         "  %s -na, --no-audio    Disable audio\n"
                         "  %s -f, --fps          Set framerate (VSYNC if not set)\n"
-                        "  %s --draw-fps         Draw FPS to screen",
-            program.c_str(), program.c_str(), program.c_str(), program.c_str(), program.c_str(), program.c_str()
+                        "  %s --draw-fps         Draw FPS to screen\n"
+                        "  %s -m, --msaa         Enable MSAA (Antialiasing)",
+            program.c_str(), program.c_str(), program.c_str(), program.c_str(), program.c_str(), program.c_str(), program.c_str()
             ));
             std::exit(0);
         }
