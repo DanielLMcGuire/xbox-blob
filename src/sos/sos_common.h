@@ -11,7 +11,6 @@ constexpr int    SAMPLES_PER_TICK = 240;
 constexpr int    MAX_TRACKS       = 12;
 constexpr size_t MAX_LOOP_DEPTH   = 8;
 constexpr int    CONTROL_INTERVAL = 16;
-constexpr float  SOS_PI           = 3.14159265358979323846f;
 
 enum OpCode
 {

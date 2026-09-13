@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include "raymath.h"
 
 #include "sos_common.h"
 #include "sos_envelope.h"
@@ -93,7 +94,7 @@ public:
             fc = std::clamp(fc, 20.0f, sampleRate * 0.45f);
 
             float r = std::clamp((float)filterRes / 32768.0f, 0.0f, 0.985f);
-            float theta = (2.0f * SOS_PI * fc) / sampleRate;
+            float theta = (2.0f * PI * fc) / sampleRate;
             float b1 = -2.0f * r * std::cos(theta);
             float b2 = r * r;
             float K  = 1.0f + b1 + b2;

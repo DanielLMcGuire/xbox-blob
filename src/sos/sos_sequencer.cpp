@@ -6,11 +6,6 @@
 #include "tracks.inl"
 #include "samples/samples.h"
 
-#ifndef SOS_PI
-#define SOS_PI 3.14159265358979323846f
-#endif
-
-
 namespace SOS 
 {
 
@@ -25,7 +20,7 @@ void Sequencer::initPatches()
     patches[PSIN1].sample.data.resize(128);
     patches[PSIN1].sample.loop = true;
     for (int i = 0; i < 128; i++)
-        patches[PSIN1].sample.data[i] = std::sin(2.0f * SOS_PI * (float)i / 128.0f);
+        patches[PSIN1].sample.data[i] = std::sin(2.0f * PI * (float)i / 128.0f);
 
     patches[PSIN1].ampEnv = &Env1a; 
     patches[PSIN1].multiEnv = &Env1m;
@@ -86,8 +81,8 @@ void Sequencer::initPatches()
     {
         if (i < 16384) j++;
         else j--;
-        double dtmp = ((double)j / 16384.0) * std::sin(FMm * 2.0 * SOS_PI * (double)i / 128.0);
-        patches[PFM].sample.data[i] = (float)std::sin(dtmp + FMc * 2.0 * SOS_PI * (double)i / 128.0);
+        double dtmp = ((double)j / 16384.0) * std::sin(FMm * 2.0 * PI * (double)i / 128.0);
+        patches[PFM].sample.data[i] = (float)std::sin(dtmp + FMc * 2.0 * PI * (double)i / 128.0);
     }
     patches[PFM].ampEnv = &OpenEnva;
     patches[PFM].multiEnv = &OpenEnvm;
