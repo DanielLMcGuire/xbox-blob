@@ -10,6 +10,26 @@
     #undef DrawText
 #endif
 
+#if defined(__cpp_pp_embed) && __cpp_pp_embed >= 202502L
+#ifdef __has_embed
+    #define HAS_EMBED 2
+#else
+    #define HAS_EMBED 1
+#endif
+#elif defined(__has_extension)
+    #if __has_extension(c_embed)
+        #ifdef __has_embed
+            #define HAS_EMBED 2
+        #else
+            #define HAS_EMBED 1
+        #endif
+    #else
+        #define HAS_EMBED 0
+    #endif
+#else
+    #define HAS_EMBED 0
+#endif
+
 XboxStartup::XboxStartup(int argc, char** argv)
 {
     parseArgs(argc, argv);
@@ -48,6 +68,35 @@ XboxStartup::XboxStartup(int argc, char** argv)
     blob = new Blob();
     driver = new BlobIntensityDriver();
     noclip = new NoclipCamera();
+
+#ifdef HAS_EMBED
+
+    #if HAS_EMBED == 2
+        #if __has_embed("../assets/xbox.ttf")
+        #else
+            #error FAILED TO FIND FONT!
+        #endif
+    #endif
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc23-extensions"
+    static constexpr unsigned char font_data[] = {
+        #embed "../assets/xbox.ttf"
+    };
+#pragma clang diagnostic pop
+
+    static constexpr int font_data_size = sizeof(font_data);
+    font = LoadFontFromMemory(
+        ".ttf",
+        font_data,
+        font_data_size,
+        32,
+        nullptr,
+        0
+    );
+
+#endif
+    fontSpacing = 2.0f;
 
     if (captureMode) driver->loop = false;
     if (doAudio)
@@ -164,18 +213,30 @@ void XboxStartup::updateInteractive()
         EndMode3D();
     }
 
+    constexpr auto solveBottomText = [](Font font, float fontSpacing, float padding) -> float {
+        return static_cast<float>(GetScreenHeight()) - (font.baseSize + fontSpacing + padding);
+    };
+
     if (drawFps)
-        DrawFPS(10, 10);
+        DrawTextEx(
+            font, 
+            TextFormat("FPS: %i", GetFPS()), 
+            Vector2{ 20, 20 }, 
+            font.baseSize,
+            fontSpacing,
+            LIME
+        );
 
     if (noclip->active)
-        DrawText(
+        DrawTextEx(
+            font,
             TextFormat("%.2f, %.2f, %.2f",
                 camera.position.x,
                 camera.position.y,
                 camera.position.z),
-            10,
-            GetScreenHeight() - 30,
-            20,
+            Vector2{ 10, solveBottomText(font, fontSpacing, 10) },
+            font.baseSize,
+            fontSpacing,
             LIME);
 
     EndDrawing();

@@ -37,6 +37,9 @@ private:
     Camera3D camera;
     Camera3D homeCamera;
 
+    Font font;
+    float fontSpacing;
+    
     Blob* blob = nullptr;
     BlobIntensityDriver* driver = nullptr;
     NoclipCamera* noclip = nullptr;
