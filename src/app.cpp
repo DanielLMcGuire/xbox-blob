@@ -224,7 +224,7 @@ void XboxStartup::updateInteractive()
             Vector2{ 20, 20 }, 
             font.baseSize,
             fontSpacing,
-            LIME
+            XD_TEXT_FOREGROUND
         );
 
     if (noclip->active)
@@ -237,7 +237,7 @@ void XboxStartup::updateInteractive()
             Vector2{ 10, solveBottomText(font, fontSpacing, 10) },
             font.baseSize,
             fontSpacing,
-            LIME);
+            XD_TEXT_FOREGROUND);
 
     EndDrawing();
 }
