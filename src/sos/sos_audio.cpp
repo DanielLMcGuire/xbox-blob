@@ -68,10 +68,8 @@ bool Audio::exportWav(const char* filename, double durationSeconds, uint32_t sam
         exportSeq.render(fBuf.data(), static_cast<int>(toRender));
 
         for (uint32_t i = 0; i < toRender * 2; ++i)
-        {
             pcmBuf[static_cast<size_t>(framesWritten) * 2 + i] =
                 static_cast<int16_t>(std::lrintf(std::clamp(fBuf[i], -1.0f, 1.0f) * 32767.0f));
-        }
 
         framesWritten += toRender;
     }

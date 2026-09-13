@@ -1,2 +1,2 @@
 @ECHO OFF
-ffmpeg -framerate 240 -i build/frames/frame_%%06d.tga -i build/frames/audio.wav -map 0:v:0 -map 1:a:0 -c:v h264_nvenc -cq 20 -preset p6 -pix_fmt yuv420p -c:a aac -b:a 192k -shortest -movflags +faststart blob.mp4
+ffmpeg -framerate 240 -i frames/frame_%%06d.tga -i frames/audio.wav -map 0:v:0 -map 1:a:0 -c:v h264_nvenc -cq 20 -preset p6 -pix_fmt yuv420p -c:a aac -b:a 192k -shortest -movflags +faststart blob.mp4

@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-ffmpeg -framerate 240 -i build/frames/frame_%06d.tga -i build/frames/audio.wav -map 0:v:0 -map 1:a:0 -c:v libx264 -crf 16 -preset slow -pix_fmt yuv420p -c:a aac -b:a 192k -shortest -movflags +faststart blob.mp4
+ffmpeg -framerate 240 -i frames/frame_%06d.tga -i frames/audio.wav -map 0:v:0 -map 1:a:0 -c:v libx264 -crf 16 -preset slow -pix_fmt yuv420p -c:a aac -b:a 192k -shortest -movflags +faststart blob.mp4

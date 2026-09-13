@@ -39,7 +39,7 @@ private:
     Camera3D homeCamera;
 
     Font font;
-    float fontSpacing;
+    float fontSpacing = 2.0f;
     
     Blob* blob = nullptr;
     BlobIntensityDriver* driver = nullptr;

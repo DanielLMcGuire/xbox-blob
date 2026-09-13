@@ -1,6 +1,7 @@
 #include "blob.h"
 #include "../defines.h"
 #include "blob_math.h"
+#include "../util/embed.h"
 
 #include <rlgl.h>
 #include "raymath.h"
@@ -133,12 +134,44 @@ void Blob::Load()
 
     Restart();
 
+#ifdef HAS_EMBED
+
+    #if HAS_EMBED == 2
+        #if __has_embed("shaders/blob.frag")
+        #else
+            #error FAILED TO FIND blob.frag!
+        #endif
+        #if __has_embed("shaders/blob.vert")
+        #else
+            #error FAILED TO FIND blob.vert!
+        #endif
+    #endif
+
+    #ifdef __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wc23-extensions"
+    #endif
+    static constexpr char blobvert_data[] = {
+        #embed "shaders/blob.vert"
+        , '\0'
+    };
+    static constexpr char blobfrag_data[] = {
+        #embed "shaders/blob.frag"
+        , '\0'
+    };
+    #ifdef __clang__
+    #pragma clang diagnostic pop
+    #endif
+
+    blobShader = LoadShaderFromMemory(blobvert_data, blobfrag_data);
+
+#else
     blobShader = LoadShaderFromMemory(
 #include "shaders/blob.vert.inl"
     ,
 #include "shaders/blob.frag.inl"
     );
-
+#endif
     blobLoc_mvp = GetShaderLocation(blobShader, "mvp");
     blobLoc_eyePos = GetShaderLocation(blobShader, "eyePos");
     blobLoc_scaling = GetShaderLocation(blobShader, "scaling");
@@ -147,11 +180,44 @@ void Blob::Load()
     blobLoc_baseColor = GetShaderLocation(blobShader, "baseColor");
     blobLoc_ambientColor = GetShaderLocation(blobShader, "ambientColor");
 
+#ifdef HAS_EMBED
+
+    #if HAS_EMBED == 2
+        #if __has_embed("shaders/bloblet.frag")
+        #else
+            #error FAILED TO FIND bloblet.frag!
+        #endif
+        #if __has_embed("shaders/bloblet.vert")
+        #else
+            #error FAILED TO FIND bloblet.vert!
+        #endif
+    #endif
+
+    #ifdef __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wc23-extensions"
+    #endif
+    static constexpr char blobletvert_data[] = {
+        #embed "shaders/bloblet.vert"
+        , '\0'
+    };
+    static constexpr char blobletfrag_data[] = {
+        #embed "shaders/bloblet.frag"
+        , '\0'
+    };
+    #ifdef __clang__
+    #pragma clang diagnostic pop
+    #endif
+
+    blobletShader = LoadShaderFromMemory(blobletvert_data, blobletfrag_data);
+
+#else
     blobletShader = LoadShaderFromMemory(
 #include "shaders/bloblet.vert.inl"
     ,
 #include "shaders/bloblet.frag.inl"
     );
+#endif
 
     bloLoc_mvp = GetShaderLocation(blobletShader, "mvp");
     bloLoc_eyePos = GetShaderLocation(blobletShader, "eyePos");

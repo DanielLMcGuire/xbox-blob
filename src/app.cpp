@@ -1,6 +1,7 @@
 #include "app.h"
 #include "util/fullscreen.h"
 #include "util/embed.h"
+#include "util/grid.h"
 #include "rlgl.h"
 
 #include <cstdio>
@@ -63,16 +64,16 @@ XboxStartup::XboxStartup(int argc, char** argv)
         #endif
     #endif
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wc23-extensions"
-#endif
+    #ifdef __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wc23-extensions"
+    #endif
     static constexpr unsigned char font_data[] = {
         #embed "../assets/xbox.ttf"
     };
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
+    #ifdef __clang__
+    #pragma clang diagnostic pop
+    #endif
 
     static constexpr int font_data_size = sizeof(font_data);
     font = LoadFontFromMemory(
@@ -87,7 +88,6 @@ XboxStartup::XboxStartup(int argc, char** argv)
     font = LoadFont("../assets/xbox.ttf");
 #endif
     if (!IsFontValid(font)) font = GetFontDefault();
-    fontSpacing = 2.0f;
 
     if (captureMode) driver->loop = false;
     if (doAudio)
@@ -202,9 +202,13 @@ void XboxStartup::updateInteractive()
     BeginDrawing();
     ClearBackground(BLACK);
 
+
     if (currentElapsedTime >= BLOB_STATIC_END_TIME)
     {
         BeginMode3D(camera);
+#ifdef _DEBUG
+        DrawGrid3D(10, 50);
+#endif
         blob->Render(camera, driver->GetPulseIntensity(), driver->GetIntensity(), driver->GetBaseIntensity(), currentElapsedTime);
         EndMode3D();
     }
