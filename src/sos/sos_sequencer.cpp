@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
-#include "tracks.inl"
+#include "tracks/tracks.inl"
 #include "samples.h"
 
 namespace SOS 

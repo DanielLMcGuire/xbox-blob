@@ -1,0 +1,15 @@
+track(BootA)
+{
+    patch(SOS::PTHUNEL16), 
+    volume(50), 
+    rest(454-50), 
+    note(aa2,252), 
+    rest(0), 
+    note(aa2,194), 
+    rest(0), 
+    volume(-20), 
+    note(aa2,200),
+    loop(255), 
+        rest(2000), 
+    endloop
+};

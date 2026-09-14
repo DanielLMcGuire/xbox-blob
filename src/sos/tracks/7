@@ -1,0 +1,25 @@
+track(Boot7)
+{
+    patch(SOS::PSAW2), 
+    xpose(0x60), 
+    volume(18), 
+    fset(1000,26000), 
+    note(dd2,1), 
+    loop(19), 
+        slur(dd2,10), 
+        finc(1500,2600), 
+    endloop, 
+    rest(800), 
+    note(dd2,1), 
+    loop(30), 
+        slur(dd2,10), 
+        finc(-750,2600), 
+    endloop, 
+    loop(30), 
+        slur(dd2,5), 
+        volume(3), 
+    endloop, 
+    loop(255), 
+        rest(2000), 
+    endloop
+};

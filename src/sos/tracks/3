@@ -1,0 +1,19 @@
+track(Boot3)
+{ 
+    patch(SOS::PTHUNEL16),
+    volume(40),
+    fset(32767,26000),
+    rest(134),
+    note(dd3,820),
+    volume(-25),
+    note(dd3,200),
+    loop(20),
+        ring(20),
+        volume(2),
+        finc(-1000,26000),
+    endloop,
+    ring(10000),
+    loop(255),
+        rest(2000),
+    endloop 
+};

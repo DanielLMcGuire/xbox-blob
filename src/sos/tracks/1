@@ -1,0 +1,21 @@
+track(Boot1)
+{ 
+    fset(1000,26000), 
+    patch(SOS::PNOISE1), 
+    volume(43), 
+    note(cc2,1),
+    loop(10), 
+        finc(3000,26000), 
+        slur(cc2,13), 
+    endloop,
+    ring(4), 
+    volume(20),
+    loop(60), 
+        volume(1), 
+        finc(-1000,26000), 
+        slur(cc2,15), 
+    endloop,
+    loop(255), 
+        rest(2000), 
+    endloop 
+};

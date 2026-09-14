@@ -1,0 +1,26 @@
+track(Boot5)
+{ 
+    patch(SOS::PGLOCK), 
+    volume(55), 
+    rest(1114), 
+    fset(32000,26000), 
+    note(as2,20), 
+    note(ff2,20), 
+    note(as1,20), 
+    volume(10),
+    loop(6), 
+        note(as2,18), 
+        rest(2), 
+        volume(30), 
+        note(as2,18), 
+        rest(2), 
+        volume(20), 
+        note(as2,18), 
+        rest(2), 
+        volume(-35), 
+        finc(-2500,26000), 
+    endloop,
+    loop(255), 
+        rest(20000), 
+    endloop 
+};

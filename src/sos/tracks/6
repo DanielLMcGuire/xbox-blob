@@ -1,0 +1,6 @@
+track(Boot6)
+{ 
+    loop(255), 
+        rest(20000), 
+    endloop
+};
