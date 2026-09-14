@@ -489,17 +489,15 @@ void Sequencer::startBootSound()
 
 void Sequencer::render(float* output, int frameCount) 
 {
+    constexpr int SOLO_TRACK = -1;
+
     monoMixL.assign(frameCount, 0.0f);
     monoMixR.assign(frameCount, 0.0f);
 
     int framesProcessed = 0;
     while (framesProcessed < frameCount) 
     {
-        if (tickCountdown <= 0.0f)
-        {
-            tick();
-            tickCountdown += samplesPerTick;
-        }
+        if (tickCountdown <= 0.0f) { tick(); tickCountdown += samplesPerTick; }
 
         int framesToTick = static_cast<int>(std::ceil(tickCountdown));
         int sliceFrames = std::min(frameCount - framesProcessed, framesToTick);
@@ -507,6 +505,7 @@ void Sequencer::render(float* output, int frameCount)
 
         for (int i = 0; i < MAX_TRACKS; i++)
         {
+            if (SOLO_TRACK >= 0 && i != SOLO_TRACK) continue;
             voices[i].renderBlock(monoMixL.data() + framesProcessed,
                                   monoMixR.data() + framesProcessed,
                                   sliceFrames, sampleRate);
