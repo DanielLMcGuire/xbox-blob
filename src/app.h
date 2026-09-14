@@ -22,7 +22,9 @@ public:
     inline bool isRunning() const { return running; }
 
 private:
+#if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB)
     void parseArgs(int argc, char** argv);
+#endif
     void updateInteractive();
     void updateCapture();
 

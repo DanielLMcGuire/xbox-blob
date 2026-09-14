@@ -466,7 +466,6 @@ void Blob::Render(const Camera3D& camera, float pulseIntensity, float blobIntens
     Vector4 litColor = Vector4Scale(color, colorIntensity);
     Vector4 ambientColor = Vector4Scale(color, 0.0f);
 
-    // --- MAIN BLOB DRAW ---
 BeginBlendMode(BLEND_ALPHA);
 BeginShaderMode(blobShader);
 SetShaderValueMatrix(blobShader, blobLoc_mvp, viewProj);
@@ -481,7 +480,6 @@ rlUpdateVertexBuffer(blobDynamicVBO, changingVertices.data(),
                       (int)(changingVertices.size() * sizeof(Vector4)), 0);
 
 #if defined(__EMSCRIPTEN__) || defined(PLATFORM_WEB)
-    // WebGL Fallback: Manually bind attributes and buffers (No VAO)
     rlEnableVertexBuffer(blobStaticVBO);
     rlSetVertexAttribute(0, 3, RL_FLOAT, false, sizeof(Vector3), 0);
     rlEnableVertexAttribute(0);
@@ -492,7 +490,6 @@ rlUpdateVertexBuffer(blobDynamicVBO, changingVertices.data(),
 
     rlEnableVertexBufferElement(blobEBO);
 #else
-    // Desktop OpenGL: Fast single-call VAO bind
     rlEnableVertexArray(blobVAO);
 #endif
 
@@ -510,7 +507,6 @@ rlDrawVertexArrayElements(0, (int)blobIndexCount, nullptr);
 EndShaderMode();
 
 
-// --- BLOBLETS DRAW ---
 Vector4 blobletColor = Vector4Scale(color, 0.3f * blobIntensity);
 Vector4 blobletAmbient = Vector4Scale(color, 0.2f);
 

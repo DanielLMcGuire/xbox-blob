@@ -18,7 +18,9 @@
 
 XboxStartup::XboxStartup(int argc, char** argv)
 {
+#if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB)
     parseArgs(argc, argv);
+#endif
     constexpr float fov = 45.0f;
 
     if (captureMode)
@@ -123,6 +125,7 @@ XboxStartup::~XboxStartup()
     CloseWindow();
 }
 
+#if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB)
 void XboxStartup::parseArgs(int argc, char** argv)
 {
     for (int i = 1; i < argc; i++)
@@ -162,6 +165,7 @@ void XboxStartup::parseArgs(int argc, char** argv)
         }
     }
 }
+#endif
 
 void XboxStartup::update()
 {
@@ -194,14 +198,12 @@ void XboxStartup::updateInteractive()
             lastClickTime = now;
         }
     }
-    if (IsKeyPressed(KEY_F1)) TOGGLE(wireframeMode);
+    if (IsKeyPressed(KEY_F5)) TOGGLE(wireframeMode);
     if (IsKeyPressed(KEY_F2)) TOGGLE(drawFps);
     if (IsKeyPressed(KEY_F9)) noclip->Toggle(camera, homeCamera);
     if (IsKeyPressed(KEY_F11) || ((IsKeyDown(KEY_LEFT_ALT) || IsKeyDown(KEY_RIGHT_ALT)) && IsKeyPressed(KEY_ENTER)))
         Fullscreen::Toggle(screenWidth, screenHeight);
-    if (IsKeyPressed(KEY_F12)) TOGGLE(gridEnabled);
-
-
+    if (IsKeyPressed(KEY_G)) TOGGLE(gridEnabled);
 
     noclip->Update(camera, dt);
 
