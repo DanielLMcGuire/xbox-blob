@@ -194,17 +194,14 @@ void XboxStartup::updateInteractive()
             lastClickTime = now;
         }
     }
-
+    if (IsKeyPressed(KEY_F1)) TOGGLE(wireframeMode);
+    if (IsKeyPressed(KEY_F2)) TOGGLE(drawFps);
+    if (IsKeyPressed(KEY_F9)) noclip->Toggle(camera, homeCamera);
     if (IsKeyPressed(KEY_F11) || ((IsKeyDown(KEY_LEFT_ALT) || IsKeyDown(KEY_RIGHT_ALT)) && IsKeyPressed(KEY_ENTER)))
         Fullscreen::Toggle(screenWidth, screenHeight);
+    if (IsKeyPressed(KEY_F12)) TOGGLE(gridEnabled);
 
-    if (IsKeyPressed(KEY_F5)) noclip->Toggle(camera, homeCamera);
 
-    if (IsKeyPressed(KEY_F2)) TOGGLE(drawFps);
-
-    if (IsKeyPressed(KEY_F6)) TOGGLE(wireframeMode);
-
-    if (IsKeyPressed(KEY_F7)) TOGGLE(gridEnabled);
 
     noclip->Update(camera, dt);
 

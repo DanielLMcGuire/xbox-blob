@@ -137,13 +137,24 @@ void Blob::Load()
 #ifdef HAS_EMBED
 
     #if HAS_EMBED == 2
-        #if __has_embed("shaders/blob.frag")
+        #ifdef __EMSCRIPTEN__
+            #if __has_embed("shaders/blob-web.frag")
+            #else
+                #error FAILED TO FIND blob-web.frag!
+            #endif
+            #if __has_embed("shaders/blob-web.vert")
+            #else
+                #error FAILED TO FIND blob-web.vert!
+            #endif
         #else
-            #error FAILED TO FIND blob.frag!
-        #endif
-        #if __has_embed("shaders/blob.vert")
-        #else
-            #error FAILED TO FIND blob.vert!
+            #if __has_embed("shaders/blob.frag")
+            #else
+                #error FAILED TO FIND blob.frag!
+            #endif
+            #if __has_embed("shaders/blob.vert")
+            #else
+                #error FAILED TO FIND blob.vert!
+            #endif
         #endif
     #endif
 
@@ -152,11 +163,19 @@ void Blob::Load()
     #pragma clang diagnostic ignored "-Wc23-extensions"
     #endif
     static constexpr char blobvert_data[] = {
+        #ifdef __EMSCRIPTEN__
+        #embed "shaders/blob-web.vert"
+        #else
         #embed "shaders/blob.vert"
+        #endif
         , '\0'
     };
     static constexpr char blobfrag_data[] = {
+        #ifdef __EMSCRIPTEN__
+        #embed "shaders/blob-web.frag"
+        #else
         #embed "shaders/blob.frag"
+        #endif
         , '\0'
     };
     #ifdef __clang__
@@ -166,12 +185,21 @@ void Blob::Load()
     blobShader = LoadShaderFromMemory(blobvert_data, blobfrag_data);
 
 #else
+    #ifdef __EMSCRIPTEN__
+    blobShader = LoadShaderFromMemory(
+#include "shaders/blob-web.vert.inl"
+    ,
+#include "shaders/blob-web.frag.inl"
+    );
+    #else
     blobShader = LoadShaderFromMemory(
 #include "shaders/blob.vert.inl"
     ,
 #include "shaders/blob.frag.inl"
     );
+    #endif
 #endif
+
     blobLoc_mvp = GetShaderLocation(blobShader, "mvp");
     blobLoc_eyePos = GetShaderLocation(blobShader, "eyePos");
     blobLoc_scaling = GetShaderLocation(blobShader, "scaling");
@@ -183,13 +211,24 @@ void Blob::Load()
 #ifdef HAS_EMBED
 
     #if HAS_EMBED == 2
-        #if __has_embed("shaders/bloblet.frag")
+        #ifdef __EMSCRIPTEN__
+            #if __has_embed("shaders/bloblet-web.frag")
+            #else
+                #error FAILED TO FIND bloblet-web.frag!
+            #endif
+            #if __has_embed("shaders/bloblet-web.vert")
+            #else
+                #error FAILED TO FIND bloblet-web.vert!
+            #endif
         #else
-            #error FAILED TO FIND bloblet.frag!
-        #endif
-        #if __has_embed("shaders/bloblet.vert")
-        #else
-            #error FAILED TO FIND bloblet.vert!
+            #if __has_embed("shaders/bloblet.frag")
+            #else
+                #error FAILED TO FIND bloblet.frag!
+            #endif
+            #if __has_embed("shaders/bloblet.vert")
+            #else
+                #error FAILED TO FIND bloblet.vert!
+            #endif
         #endif
     #endif
 
@@ -198,11 +237,19 @@ void Blob::Load()
     #pragma clang diagnostic ignored "-Wc23-extensions"
     #endif
     static constexpr char blobletvert_data[] = {
+        #ifdef __EMSCRIPTEN__
+        #embed "shaders/bloblet-web.vert"
+        #else
         #embed "shaders/bloblet.vert"
+        #endif
         , '\0'
     };
     static constexpr char blobletfrag_data[] = {
+        #ifdef __EMSCRIPTEN__
+        #embed "shaders/bloblet-web.frag"
+        #else
         #embed "shaders/bloblet.frag"
+        #endif
         , '\0'
     };
     #ifdef __clang__
@@ -212,11 +259,19 @@ void Blob::Load()
     blobletShader = LoadShaderFromMemory(blobletvert_data, blobletfrag_data);
 
 #else
+    #ifdef __EMSCRIPTEN__
+    blobletShader = LoadShaderFromMemory(
+#include "shaders/bloblet-web.vert.inl"
+    ,
+#include "shaders/bloblet-web.frag.inl"
+    );
+    #else
     blobletShader = LoadShaderFromMemory(
 #include "shaders/bloblet.vert.inl"
     ,
 #include "shaders/bloblet.frag.inl"
     );
+    #endif
 #endif
 
     bloLoc_mvp = GetShaderLocation(blobletShader, "mvp");
@@ -411,52 +466,96 @@ void Blob::Render(const Camera3D& camera, float pulseIntensity, float blobIntens
     Vector4 litColor = Vector4Scale(color, colorIntensity);
     Vector4 ambientColor = Vector4Scale(color, 0.0f);
 
-    BeginBlendMode(BLEND_ALPHA);
-    BeginShaderMode(blobShader);
-    SetShaderValueMatrix(blobShader, blobLoc_mvp, viewProj);
-    SetShaderValue(blobShader, blobLoc_eyePos, &camera.position, SHADER_UNIFORM_VEC3);
-    SetShaderValue(blobShader, blobLoc_scaling, &scaledRadius, SHADER_UNIFORM_VEC3);
-    SetShaderValue(blobShader, blobLoc_ooScaling, &ooScaledRadius, SHADER_UNIFORM_VEC3);
-    SetShaderValue(blobShader, blobLoc_center, &position, SHADER_UNIFORM_VEC3);
-    SetShaderValue(blobShader, blobLoc_baseColor, &litColor, SHADER_UNIFORM_VEC4);
-    SetShaderValue(blobShader, blobLoc_ambientColor, &ambientColor, SHADER_UNIFORM_VEC4);
+    // --- MAIN BLOB DRAW ---
+BeginBlendMode(BLEND_ALPHA);
+BeginShaderMode(blobShader);
+SetShaderValueMatrix(blobShader, blobLoc_mvp, viewProj);
+SetShaderValue(blobShader, blobLoc_eyePos, &camera.position, SHADER_UNIFORM_VEC3);
+SetShaderValue(blobShader, blobLoc_scaling, &scaledRadius, SHADER_UNIFORM_VEC3);
+SetShaderValue(blobShader, blobLoc_ooScaling, &ooScaledRadius, SHADER_UNIFORM_VEC3);
+SetShaderValue(blobShader, blobLoc_center, &position, SHADER_UNIFORM_VEC3);
+SetShaderValue(blobShader, blobLoc_baseColor, &litColor, SHADER_UNIFORM_VEC4);
+SetShaderValue(blobShader, blobLoc_ambientColor, &ambientColor, SHADER_UNIFORM_VEC4);
 
-    rlUpdateVertexBuffer(blobDynamicVBO, changingVertices.data(),
-                          (int)(changingVertices.size() * sizeof(Vector4)), 0);
+rlUpdateVertexBuffer(blobDynamicVBO, changingVertices.data(),
+                      (int)(changingVertices.size() * sizeof(Vector4)), 0);
 
+#if defined(__EMSCRIPTEN__) || defined(PLATFORM_WEB)
+    // WebGL Fallback: Manually bind attributes and buffers (No VAO)
+    rlEnableVertexBuffer(blobStaticVBO);
+    rlSetVertexAttribute(0, 3, RL_FLOAT, false, sizeof(Vector3), 0);
+    rlEnableVertexAttribute(0);
+
+    rlEnableVertexBuffer(blobDynamicVBO);
+    rlSetVertexAttribute(1, 4, RL_FLOAT, false, sizeof(Vector4), 0);
+    rlEnableVertexAttribute(1);
+
+    rlEnableVertexBufferElement(blobEBO);
+#else
+    // Desktop OpenGL: Fast single-call VAO bind
     rlEnableVertexArray(blobVAO);
-    rlDrawVertexArrayElements(0, (int)blobIndexCount, nullptr);
+#endif
+
+rlDrawVertexArrayElements(0, (int)blobIndexCount, nullptr);
+
+#if defined(__EMSCRIPTEN__) || defined(PLATFORM_WEB)
+    rlDisableVertexBufferElement();
+    rlDisableVertexAttribute(0);
+    rlDisableVertexAttribute(1);
+    rlDisableVertexBuffer();
+#else
     rlDisableVertexArray();
-    EndShaderMode();
+#endif
 
-    Vector4 blobletColor = Vector4Scale(color, 0.3f * blobIntensity);
-    Vector4 blobletAmbient = Vector4Scale(color, 0.2f);
+EndShaderMode();
 
-    BeginShaderMode(blobletShader);
-    SetShaderValueMatrix(blobletShader, bloLoc_mvp, viewProj);
-    SetShaderValue(blobletShader, bloLoc_eyePos, &camera.position, SHADER_UNIFORM_VEC3);
-    SetShaderValue(blobletShader, bloLoc_baseColor, &blobletColor, SHADER_UNIFORM_VEC4);
-    SetShaderValue(blobletShader, bloLoc_ambientColor, &blobletAmbient, SHADER_UNIFORM_VEC4);
-    float alphaScale = 2.0f;
-    SetShaderValue(blobletShader, bloLoc_alphaScale, &alphaScale, SHADER_UNIFORM_FLOAT);
 
+// --- BLOBLETS DRAW ---
+Vector4 blobletColor = Vector4Scale(color, 0.3f * blobIntensity);
+Vector4 blobletAmbient = Vector4Scale(color, 0.2f);
+
+BeginShaderMode(blobletShader);
+SetShaderValueMatrix(blobletShader, bloLoc_mvp, viewProj);
+SetShaderValue(blobletShader, bloLoc_eyePos, &camera.position, SHADER_UNIFORM_VEC3);
+SetShaderValue(blobletShader, bloLoc_baseColor, &blobletColor, SHADER_UNIFORM_VEC4);
+SetShaderValue(blobletShader, bloLoc_ambientColor, &blobletAmbient, SHADER_UNIFORM_VEC4);
+float alphaScale = 2.0f;
+SetShaderValue(blobletShader, bloLoc_alphaScale, &alphaScale, SHADER_UNIFORM_FLOAT);
+
+#if defined(__EMSCRIPTEN__) || defined(PLATFORM_WEB)
+    rlEnableVertexBuffer(blobletStaticVBO);
+    rlSetVertexAttribute(0, 3, RL_FLOAT, false, sizeof(Vector3), 0);
+    rlEnableVertexAttribute(0);
+
+    rlEnableVertexBufferElement(blobletEBO);
+#else
     rlEnableVertexArray(blobletVAO);
-    for (int i = 0; i < numBloblets; i++)
-    {
-        const Bloblet& bl = bloblets[i];
+#endif
 
-        float perp = bl.radius / sqrtf(bl.wobble);
-        float parallelMinusPerp = bl.radius * bl.wobble - perp;
-        Vector3 scaleDirPMP = Vector3Scale(bl.direction, parallelMinusPerp);
+for (int i = 0; i < numBloblets; i++)
+{
+    const Bloblet& bl = bloblets[i];
 
-        SetShaderValue(blobletShader, bloLoc_center, &bl.position, SHADER_UNIFORM_VEC3);
-        SetShaderValue(blobletShader, bloLoc_scaleDir, &bl.direction, SHADER_UNIFORM_VEC3);
-        SetShaderValue(blobletShader, bloLoc_scalePerp, &perp, SHADER_UNIFORM_FLOAT);
-        SetShaderValue(blobletShader, bloLoc_scaleDirPMP, &scaleDirPMP, SHADER_UNIFORM_VEC3);
+    float perp = bl.radius / sqrtf(bl.wobble);
+    float parallelMinusPerp = bl.radius * bl.wobble - perp;
+    Vector3 scaleDirPMP = Vector3Scale(bl.direction, parallelMinusPerp);
 
-        rlDrawVertexArrayElements(0, (int)blobletIndexCount, nullptr);
-    }
+    SetShaderValue(blobletShader, bloLoc_center, &bl.position, SHADER_UNIFORM_VEC3);
+    SetShaderValue(blobletShader, bloLoc_scaleDir, &bl.direction, SHADER_UNIFORM_VEC3);
+    SetShaderValue(blobletShader, bloLoc_scalePerp, &perp, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(blobletShader, bloLoc_scaleDirPMP, &scaleDirPMP, SHADER_UNIFORM_VEC3);
+
+    rlDrawVertexArrayElements(0, (int)blobletIndexCount, nullptr);
+}
+
+#if defined(__EMSCRIPTEN__) || defined(PLATFORM_WEB)
+    rlDisableVertexBufferElement();
+    rlDisableVertexAttribute(0);
+    rlDisableVertexBuffer();
+#else
     rlDisableVertexArray();
-    EndShaderMode();
-    EndBlendMode();
+#endif
+
+EndShaderMode();
+EndBlendMode();
 }

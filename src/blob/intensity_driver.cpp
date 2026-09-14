@@ -3,6 +3,8 @@
 #include "../util/qrand.h"
 #include "blob.h"
 
+#include <cmath>
+
 void BlobIntensityDriver::Init()
 {
     timeElapsed = 0.0f;
