@@ -135,25 +135,16 @@ void Blob::Load()
     Restart();
 
 #ifdef HAS_EMBED
-
     #if HAS_EMBED == 2
         #ifdef __EMSCRIPTEN__
-            #if __has_embed("shaders/blob-web.frag")
-            #else
-                #error FAILED TO FIND blob-web.frag!
-            #endif
-            #if __has_embed("shaders/blob-web.vert")
-            #else
-                #error FAILED TO FIND blob-web.vert!
+            #if !__has_embed("shaders/blob-web.vert")    || !__has_embed("shaders/blob-web.frag") || \
+                !__has_embed("shaders/bloblet-web.vert") || !__has_embed("shaders/bloblet-web.frag")
+                #error FAILED TO FIND WEB SHADERS!
             #endif
         #else
-            #if __has_embed("shaders/blob.frag")
-            #else
-                #error FAILED TO FIND blob.frag!
-            #endif
-            #if __has_embed("shaders/blob.vert")
-            #else
-                #error FAILED TO FIND blob.vert!
+            #if !__has_embed("shaders/blob.vert")    || !__has_embed("shaders/blob.frag") || \
+                !__has_embed("shaders/bloblet.vert") || !__has_embed("shaders/bloblet.frag")
+                #error FAILED TO FIND DESKTOP SHADERS!
             #endif
         #endif
     #endif
@@ -162,42 +153,73 @@ void Blob::Load()
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wc23-extensions"
     #endif
-    static constexpr char blobvert_data[] = {
+
+    static constexpr char blobVertData[] = { 
         #ifdef __EMSCRIPTEN__
-        #embed "shaders/blob-web.vert"
+            #embed "shaders/blob-web.vert"
         #else
-        #embed "shaders/blob.vert"
+            #embed "shaders/blob.vert"
         #endif
-        , '\0'
+        , '\0' 
     };
-    static constexpr char blobfrag_data[] = {
+    static constexpr char blobFragData[] = { 
         #ifdef __EMSCRIPTEN__
-        #embed "shaders/blob-web.frag"
+            #embed "shaders/blob-web.frag"
         #else
-        #embed "shaders/blob.frag"
+            #embed "shaders/blob.frag"
         #endif
-        , '\0'
+        , '\0' 
     };
+    static constexpr char blobletVertData[] = { 
+        #ifdef __EMSCRIPTEN__
+            #embed "shaders/bloblet-web.vert"
+        #else
+            #embed "shaders/bloblet.vert"
+        #endif
+        , '\0' 
+    };
+    static constexpr char blobletFragData[] = { 
+        #ifdef __EMSCRIPTEN__
+            #embed "shaders/bloblet-web.frag"
+        #else
+            #embed "shaders/bloblet.frag"
+        #endif
+        , '\0' 
+    };
+
     #ifdef __clang__
     #pragma clang diagnostic pop
     #endif
 
-    blobShader = LoadShaderFromMemory(blobvert_data, blobfrag_data);
-
+    blobShader = LoadShaderFromMemory(blobVertData, blobFragData);
+    blobletShader = LoadShaderFromMemory(blobletVertData, blobletFragData);
 #else
-    #ifdef __EMSCRIPTEN__
     blobShader = LoadShaderFromMemory(
+#ifdef __EMSCRIPTEN__
 #include "shaders/blob-web.vert.inl"
-    ,
-#include "shaders/blob-web.frag.inl"
-    );
-    #else
-    blobShader = LoadShaderFromMemory(
+#else
 #include "shaders/blob.vert.inl"
+#endif
     ,
+#ifdef __EMSCRIPTEN__
+#include "shaders/blob-web.frag.inl"
+#else
 #include "shaders/blob.frag.inl"
+#endif
     );
-    #endif
+    blobletShader = LoadShaderFromMemory(
+#ifdef __EMSCRIPTEN__
+#include "shaders/bloblet-web.vert.inl"
+#else
+#include "shaders/bloblet.vert.inl"
+#endif
+    ,
+#ifdef __EMSCRIPTEN__
+#include "shaders/bloblet-web.frag.inl"
+#else
+#include "shaders/bloblet.frag.inl"
+#endif
+    );
 #endif
 
     blobLoc_mvp = GetShaderLocation(blobShader, "mvp");
@@ -207,72 +229,6 @@ void Blob::Load()
     blobLoc_center = GetShaderLocation(blobShader, "center");
     blobLoc_baseColor = GetShaderLocation(blobShader, "baseColor");
     blobLoc_ambientColor = GetShaderLocation(blobShader, "ambientColor");
-
-#ifdef HAS_EMBED
-
-    #if HAS_EMBED == 2
-        #ifdef __EMSCRIPTEN__
-            #if __has_embed("shaders/bloblet-web.frag")
-            #else
-                #error FAILED TO FIND bloblet-web.frag!
-            #endif
-            #if __has_embed("shaders/bloblet-web.vert")
-            #else
-                #error FAILED TO FIND bloblet-web.vert!
-            #endif
-        #else
-            #if __has_embed("shaders/bloblet.frag")
-            #else
-                #error FAILED TO FIND bloblet.frag!
-            #endif
-            #if __has_embed("shaders/bloblet.vert")
-            #else
-                #error FAILED TO FIND bloblet.vert!
-            #endif
-        #endif
-    #endif
-
-    #ifdef __clang__
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wc23-extensions"
-    #endif
-    static constexpr char blobletvert_data[] = {
-        #ifdef __EMSCRIPTEN__
-        #embed "shaders/bloblet-web.vert"
-        #else
-        #embed "shaders/bloblet.vert"
-        #endif
-        , '\0'
-    };
-    static constexpr char blobletfrag_data[] = {
-        #ifdef __EMSCRIPTEN__
-        #embed "shaders/bloblet-web.frag"
-        #else
-        #embed "shaders/bloblet.frag"
-        #endif
-        , '\0'
-    };
-    #ifdef __clang__
-    #pragma clang diagnostic pop
-    #endif
-
-    blobletShader = LoadShaderFromMemory(blobletvert_data, blobletfrag_data);
-
-#else
-    #ifdef __EMSCRIPTEN__
-    blobletShader = LoadShaderFromMemory(
-#include "shaders/bloblet-web.vert.inl"
-    ,
-#include "shaders/bloblet-web.frag.inl"
-    );
-    #else
-    blobletShader = LoadShaderFromMemory(
-#include "shaders/bloblet.vert.inl"
-    ,
-#include "shaders/bloblet.frag.inl"
-    );
-    #endif
-#endif
 
     bloLoc_mvp = GetShaderLocation(blobletShader, "mvp");
     bloLoc_eyePos = GetShaderLocation(blobletShader, "eyePos");
