@@ -1,5 +1,4 @@
-#ifndef __DSOUND_INCLUDED__
-#define __DSOUND_INCLUDED__
+#pragma once
 
 // windef.h
 typedef unsigned long DWORD;
@@ -22,7 +21,3 @@ typedef struct _DSENVELOPEDESC
 } DSENVELOPEDESC, *LPDSENVELOPEDESC;
 
 typedef const DSENVELOPEDESC *LPCDSENVELOPEDESC;
-
-
-
-#endif // __DSOUND_INCLUDED__

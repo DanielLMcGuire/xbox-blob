@@ -9,28 +9,19 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter)
 include("cmake/raylib.cmake")
 include("cmake/sound.cmake")
 
-add_executable(xbox_startup
-    "${SOUND_OUT_DIR}/samples.h"
+add_subdirectory("thirdparty")
+add_subdirectory("src")
 
-    src/blob/blob.cpp
-    src/blob/blob_bump.cpp
-    src/blob/bloblet.cpp
-    src/blob/blob_texgen.cpp
-    src/blob/intensity_driver.cpp
-    
-    src/sos/sos_audio.cpp
-    src/sos/sos_envelope.cpp
-    src/sos/sos_sequencer.cpp
-     
+add_executable(xbox_startup
     src/util/noclip.cpp
 
     src/app.cpp
     src/main.cpp
 )
 
-target_link_libraries(xbox_startup PRIVATE raylib)
+target_link_libraries(xbox_startup PRIVATE raylib rlimgui scene sos blob)
 
-target_include_directories(xbox_startup PRIVATE "${SOUND_OUT_DIR}")
+target_include_directories(sos PRIVATE "${SOUND_OUT_DIR}")
 
 if (APPLE)
     target_link_libraries(xbox_startup PRIVATE

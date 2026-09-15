@@ -8,6 +8,9 @@
 #include "util/noclip.h"
 #include "sos/sos_audio.h"
 
+#include "scene/scene_renderer.h"
+#include "scene/cam_control.h"
+
 #include <algorithm>
 #include <cmath>
 #include <string>
@@ -27,16 +30,23 @@ private:
 #endif
     void updateInteractive();
     void updateCapture();
+    void updateUI();
 
+    bool showGui = false;
     bool captureMode = false;
     bool fullscreen = false;
     bool doAudio = true;
     int framerate = 0;
     bool drawFps = false;
+#if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB)
     bool msaaEnabled = false;
+#else
+    bool msaaEnabled = true;
+#endif
     bool gridEnabled = false;
     bool wireframeMode = false;
     int32_t seed = defSeed;
+    bool cursorEnabled = true;
 
     int screenWidth = 960;
     int screenHeight = 720;
@@ -50,8 +60,14 @@ private:
     BlobIntensityDriver* driver = nullptr;
     NoclipCamera* noclip = nullptr;
     SOS::Audio* audio = nullptr;
+    IntroSceneRenderer* sceneRenderer = nullptr;
+
+    CameraController camController;
+    bool renderSceneGeom = true;
+    bool renderSlash = true;
 
     double lastClickTime;
     int frameNumber = 0;
     bool running = true;
+    float currentElapsedTime;
 };

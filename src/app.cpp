@@ -4,6 +4,8 @@
 #include "util/grid.h"
 #include "util/text_solvers.h"
 #include "rlgl.h"
+#include "imgui.h"
+#include "rlImGui.h"
 
 #include <cstdio>
 #include <filesystem>
@@ -22,6 +24,9 @@ XboxStartup::XboxStartup(int argc, char** argv)
     parseArgs(argc, argv);
 #endif
     constexpr float fov = 45.0f;
+
+    camController.init();
+    camController.pickPath(0);
 
     if (captureMode)
     {
@@ -54,6 +59,8 @@ XboxStartup::XboxStartup(int argc, char** argv)
         camera = { { 0.0f, distance, -6.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, fov, CAMERA_PERSPECTIVE };
     }
 
+    rlImGuiSetup(true);
+
     homeCamera = camera;
     lastClickTime = -DOUBLE_CLICK_TIME;
 
@@ -62,6 +69,8 @@ XboxStartup::XboxStartup(int argc, char** argv)
     blob = new Blob();
     driver = new BlobIntensityDriver(seed);
     noclip = new NoclipCamera();
+    sceneRenderer = new IntroSceneRenderer();
+    sceneRenderer->create(); 
 
 #ifdef HAS_EMBED
 
@@ -114,14 +123,22 @@ XboxStartup::~XboxStartup()
             std::fputs("Failed to export WAV\n", stderr);
         }
     }
-
-    delete blob;
-    delete driver;
-    delete noclip;
-    delete audio;
+    if (audio)
+        delete blob;
+    if (driver)
+        delete driver;
+    if (noclip)
+        delete noclip;
+    if (audio)
+        delete audio;
+    if (sceneRenderer) {
+        sceneRenderer->unload();
+        delete sceneRenderer;
+    }
 
     if (doAudio && !captureMode) CloseAudioDevice();
 
+    rlImGuiShutdown();
     CloseWindow();
 }
 
@@ -180,14 +197,41 @@ void XboxStartup::update()
     rlEnableBackfaceCulling();
 }
 
+void XboxStartup::updateUI()
+{
+    rlImGuiBegin();
+
+    if (ImGui::Begin("Options"))
+    {
+        ImGui::TextUnformatted("Visual");
+        ImGui::Separator();
+
+        ImGui::Checkbox("Show 3D Grid (G)", &gridEnabled);
+        ImGui::Checkbox("Draw FPS Overlay (F2)", &drawFps);
+#if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB)
+        ImGui::Checkbox("Wireframe Mode (F5)", &wireframeMode);
+        if (ImGui::Button("Toggle Fullscreen (F11 / Alt+Enter)"))
+            Fullscreen::Toggle(screenWidth, screenHeight);
+#endif
+
+        ImGui::Spacing();
+        ImGui::TextUnformatted("Stats");
+        ImGui::Separator();
+
+        ImGui::Text("FPS: %d", GetFPS());
+        ImGui::Text("Elapsed Time: %.2f s", currentElapsedTime);
+    } ImGui::End();
+
+    rlImGuiEnd();
+}
+
 void XboxStartup::updateInteractive()
 {
     const float dt = GetFrameTime();
-
+#if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB)
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
     {
         const double now = GetTime();
-
         if (now - lastClickTime < DOUBLE_CLICK_TIME)
         {
             Fullscreen::Toggle(screenWidth, screenHeight);
@@ -198,46 +242,74 @@ void XboxStartup::updateInteractive()
             lastClickTime = now;
         }
     }
-    if (IsKeyPressed(KEY_F5)) TOGGLE(wireframeMode);
+#endif
+    if (IsKeyPressed(KEY_GRAVE)) TOGGLE(showGui);
     if (IsKeyPressed(KEY_F2)) TOGGLE(drawFps);
     if (IsKeyPressed(KEY_F9)) noclip->Toggle(camera, homeCamera);
+#if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB)
+    if (IsKeyPressed(KEY_F5)) TOGGLE(wireframeMode);
     if (IsKeyPressed(KEY_F11) || ((IsKeyDown(KEY_LEFT_ALT) || IsKeyDown(KEY_RIGHT_ALT)) && IsKeyPressed(KEY_ENTER)))
         Fullscreen::Toggle(screenWidth, screenHeight);
+#endif
     if (IsKeyPressed(KEY_G)) TOGGLE(gridEnabled);
 
     noclip->Update(camera, dt);
 
     const float previousElapsedTime = driver->GetElapsedTime();
     driver->Advance(dt, *blob);
-    const float currentElapsedTime = driver->GetElapsedTime();
+    currentElapsedTime = driver->GetElapsedTime();
 
-    if (audio)
-    {
-        if (currentElapsedTime < previousElapsedTime) audio->restart();
-        if (currentElapsedTime >= BLOB_STATIC_END_TIME) audio->init();
+    Vector3 splinePos, splineLook;
+    camController.getPosition(currentElapsedTime, &splinePos, &splineLook, &renderSceneGeom, &renderSlash);
+
+    if (!noclip->active) {
+        camera.position = splinePos;
+        camera.target = splineLook;
+        camera.up = { 0.0f, 0.0f, 1.0f };
     }
+
+    float animProgress = currentElapsedTime / DEMO_TOTAL_TIME;
+    if (animProgress > 1.0f) animProgress = 1.0f;
+    sceneRenderer->advanceTime(animProgress);
+
+    if (currentElapsedTime >= BLOB_STATIC_END_TIME)
+        sceneRenderer->updateShadows(*blob);
+
+    if (currentElapsedTime < previousElapsedTime) {
+            if (audio) audio->restart();
+            camController.pickPath(0);
+    }
+    if (audio)
+        if (currentElapsedTime >= BLOB_STATIC_END_TIME) audio->init();
 
     BeginDrawing();
     ClearBackground(BLACK);
-
+#if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB)
     if (wireframeMode)
         rlEnableWireMode(); 
-
+#endif
     if (gridEnabled) {
         BeginMode3D(camera);
         Grid::Draw3D(10, 50, { 255, 255, 255, 255 });
         EndMode3D();
     }
 
+    if (currentElapsedTime >= BLOB_STATIC_END_TIME && renderSceneGeom) {
+        sceneRenderer->updateShadows(*blob);
+    }
+
     if (currentElapsedTime >= BLOB_STATIC_END_TIME)
     {
         BeginMode3D(camera);
         blob->Render(camera, driver->GetPulseIntensity(), driver->GetIntensity(), driver->GetBaseIntensity(), currentElapsedTime);
+        sceneRenderer->render(camera, *blob, true);
         EndMode3D();
     }
 
+#if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB)
     if (wireframeMode)
         rlDisableWireMode();
+#endif
 
     if (drawFps)
         DrawTextEx(
@@ -260,6 +332,9 @@ void XboxStartup::updateInteractive()
             font.baseSize,
             fontSpacing,
             XD_TEXT_FOREGROUND);
+    
+    if (showGui)
+        updateUI();
 
     EndDrawing();
 }
@@ -276,22 +351,21 @@ void XboxStartup::updateCapture()
 
     BeginDrawing();
     ClearBackground(BLACK);
-
+#if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB)
     if (wireframeMode)
         rlEnableWireMode();
-
+#endif
     if (driver->GetElapsedTime() >= BLOB_STATIC_END_TIME)
     {
         BeginMode3D(camera);
         blob->Render(camera, driver->GetPulseIntensity(), driver->GetIntensity(), driver->GetBaseIntensity(), driver->GetElapsedTime());
         EndMode3D();
     }
-
+#if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB)
     if (wireframeMode)
         rlDisableWireMode();
-
+#endif
     EndDrawing();
 
     TakeScreenshot(TextFormat("frames/frame_%06d.tga", frameNumber++));
-    
 }
