@@ -10,6 +10,7 @@ struct NoclipCamera
     float moveSpeed = 14.0f;
     float sprintMultiplier = 3.0f;
     float mouseSensitivity = 0.0020f;
+    float gamepadLookSensitivity = 2.5f;
 
     void SyncFromCamera(const Camera3D& camera);
 
