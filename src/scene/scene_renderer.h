@@ -21,6 +21,8 @@ public:
 
     void render(const Camera3D &camera, const Blob &blob, bool withShadows);
 
+    void renderAllSilhouettes(const Camera3D &camera, int mvpLoc, int modelLoc, Shader shader);
+
 private:
     struct GPUMesh
     {

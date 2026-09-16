@@ -311,6 +311,26 @@ void IntroSceneRenderer::updateShadows(const Blob &blob)
     rlViewport(0, 0, GetScreenWidth(), GetScreenHeight());
 }
 
+void IntroSceneRenderer::renderAllSilhouettes(const Camera3D &camera, int mvpLoc, int modelLoc, Shader shader)
+{
+    Matrix view = GetCameraMatrix(camera);
+    float aspect = (float)GetScreenWidth() / (float)GetScreenHeight();
+    Matrix proj = MatrixPerspective(camera.fovy * DEG2RAD, aspect, 0.4f, 800.0f);
+    Matrix viewProj = MatrixMultiply(view, proj);
+
+    for (PrimitiveTypes type = (PrimitiveTypes)0; type < pt_NoTypes; type = (PrimitiveTypes)(type + 1))
+    {
+        for (const auto &inst : primSets[type].instances)
+        {
+            Matrix model = inst.worldMatrix(animTables);
+            Matrix mvp = MatrixMultiply(model, viewProj);
+            SetShaderValueMatrix(shader, mvpLoc, mvp);
+            if (modelLoc >= 0) SetShaderValueMatrix(shader, modelLoc, model);
+            drawMeshRaw(meshes[type][inst.idxVersion]);
+        }
+    }
+}
+
 void IntroSceneRenderer::render(const Camera3D &camera, const Blob &blob, bool withShadows)
 {
     Matrix view = GetCameraMatrix(camera);
