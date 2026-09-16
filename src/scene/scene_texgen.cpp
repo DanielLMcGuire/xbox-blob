@@ -248,8 +248,9 @@ Image CreateHighlightMapImage(int size, int power, bool falloffAlpha, float fLin
 std::vector<Image> CreatePlasmaMapImages(int num, int size, int noise, int seed, int intensitySeed, int intensityMax)
 {
     if (num > 3) num = 3;
-    int texSize = size * size;
-    std::vector<uint8_t> pixels((size_t)texSize * num, 0);
+
+    size_t texSize = (size_t)size * (size_t)size;
+    std::vector<uint8_t> pixels(texSize * (size_t)num, 0);
     pixels[0] = (uint8_t)intensitySeed;
 
     QRand rng;
@@ -276,14 +277,18 @@ std::vector<Image> CreatePlasmaMapImages(int num, int size, int noise, int seed,
         {
             for (int t = 0; t < num; t++)
             {
-                int crnSW = pixels[(size_t)texSize * t + size * ly + lx];
-                int crnSE = pixels[(size_t)texSize * t + size * ly + rx];
-                int crnNW = pixels[(size_t)texSize * t + size * uy + lx];
-                int crnNE = pixels[(size_t)texSize * t + size * uy + rx];
+                int crnSW = pixels[(size_t)texSize * t + (size_t)size * ly + lx];
+                int crnSE = pixels[(size_t)texSize * t + (size_t)size * ly + rx];
+                int crnNW = pixels[(size_t)texSize * t + (size_t)size * uy + lx];
+                int crnNE = pixels[(size_t)texSize * t + (size_t)size * uy + rx];
+
                 int dwI = (crnSW + crnSE + crnNW + crnNE) >> 2;
                 dwI += rng.Rand(curNoise * 2) - curNoise;
-                pixels[(size_t)texSize * t + size * curY + curX] = (uint8_t)std::max(0, std::min(intensityMax, dwI));
+
+                pixels[(size_t)texSize * t + (size_t)size * curY + curX] =
+                    (uint8_t)std::max(0, std::min(intensityMax, dwI));
             }
+
             curX += curStep;
             if (curX >= size)
             {
@@ -302,14 +307,18 @@ std::vector<Image> CreatePlasmaMapImages(int num, int size, int noise, int seed,
         {
             for (int t = 0; t < num; t++)
             {
-                int crnN = pixels[(size_t)texSize * t + size * uy + curX];
-                int crnS = pixels[(size_t)texSize * t + size * ly + curX];
-                int crnW = pixels[(size_t)texSize * t + size * curY + lx];
-                int crnE = pixels[(size_t)texSize * t + size * curY + rx];
+                int crnN = pixels[(size_t)texSize * t + (size_t)size * uy + curX];
+                int crnS = pixels[(size_t)texSize * t + (size_t)size * ly + curX];
+                int crnW = pixels[(size_t)texSize * t + (size_t)size * curY + lx];
+                int crnE = pixels[(size_t)texSize * t + (size_t)size * curY + rx];
+
                 int dwI = ((crnN & 0xff) + (crnS & 0xff) + (crnE & 0xff) + (crnW & 0xff)) >> 2;
                 dwI += rng.Rand(curNoise * 2) - curNoise;
-                pixels[(size_t)texSize * t + size * curY + curX] = (uint8_t)std::max(0, std::min(intensityMax, dwI));
+
+                pixels[(size_t)texSize * t + (size_t)size * curY + curX] =
+                    (uint8_t)std::max(0, std::min(intensityMax, dwI));
             }
+
             curX += curStep;
             if (curX >= size)
             {
@@ -330,15 +339,18 @@ std::vector<Image> CreatePlasmaMapImages(int num, int size, int noise, int seed,
                         curX = 0;
                         curY = curSize;
                     }
+
                     bSecondPass = !bSecondPass;
                     continue;
                 }
+
                 curX = bSecondPass ? 0 : curSize;
             }
         }
     }
 
     std::vector<Image> images(num);
+
     for (int t = 0; t < num; t++)
     {
         Image &img = images[t];
@@ -346,9 +358,11 @@ std::vector<Image> CreatePlasmaMapImages(int num, int size, int noise, int seed,
         img.height = size;
         img.mipmaps = 1;
         img.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
-        auto *out = (uint8_t *)RL_MALLOC((size_t)texSize * 4);
+
+        auto *out = (uint8_t *)RL_MALLOC(texSize * 4);
         img.data = out;
-        for (int p = 0; p < texSize; p++)
+
+        for (size_t p = 0; p < texSize; p++)
         {
             out[p * 4 + 0] = 255;
             out[p * 4 + 1] = 255;
@@ -356,5 +370,7 @@ std::vector<Image> CreatePlasmaMapImages(int num, int size, int noise, int seed,
             out[p * 4 + 3] = pixels[(size_t)texSize * t + p];
         }
     }
+
     return images;
 }
+
