@@ -5,6 +5,16 @@ project(xbox_blob_raylib CXX)
 set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if(WIN32)
+    enable_language(RC)
+endif()
+
+if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    include(${CMAKE_CURRENT_LIST_DIR}/cmake/ClangFix.cmake)
+elseif(WIN32 AND MSVC)
+    include(${CMAKE_CURRENT_LIST_DIR}/cmake/MSVCFix.cmake)
+endif()
+
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 include("cmake/raylib.cmake")
 include("cmake/sound.cmake")
@@ -12,11 +22,17 @@ include("cmake/sound.cmake")
 add_subdirectory("thirdparty")
 add_subdirectory("src")
 
-add_executable(xbox_startup
+add_executable(xbox_startup WIN32
     src/util/noclip.cpp
+    src/main.rc
     src/main.cpp
 )
 
+if(WIN32)
+    if(MSVC OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        target_link_options(xbox_startup PRIVATE "-Xlinker" "/ENTRY:mainCRTStartup")
+    endif()
+endif()
 
 target_link_libraries(xbox_startup PRIVATE app raylib)
 

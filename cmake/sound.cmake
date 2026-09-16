@@ -12,3 +12,5 @@ add_custom_command(
     COMMENT "Encoding audio..."
     VERBATIM
 )
+
+add_custom_target(generate_sound_samples DEPENDS "${SOUND_OUT_DIR}/samples.h")

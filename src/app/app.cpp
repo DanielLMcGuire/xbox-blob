@@ -11,6 +11,7 @@
 
 #if defined(_WIN32)
     #undef DrawText
+    #include "win32_window.h"
 #endif
 
 XboxStartup::XboxStartup(int argc, char** argv)
@@ -29,7 +30,7 @@ XboxStartup::XboxStartup(int argc, char** argv)
         std::filesystem::create_directories("frames");
         if (msaaEnabled)
             SetConfigFlags(FLAG_MSAA_4X_HINT);
-        InitWindow(screenWidth, screenHeight, "Xbox Startup | Rendering...");
+        InitWindow(screenWidth, screenHeight, "XBox Startup | Rendering...");
         int monitor = GetCurrentMonitor();
         int width = GetMonitorWidth(monitor);
         int height = GetMonitorHeight(monitor);
@@ -48,13 +49,18 @@ XboxStartup::XboxStartup(int argc, char** argv)
         if (framerate == 0) cfg |= FLAG_VSYNC_HINT;
         if (msaaEnabled) cfg |= FLAG_MSAA_4X_HINT;
         SetConfigFlags(cfg);
-        InitWindow(screenWidth, screenHeight, "Xbox Startup");
+        InitWindow(screenWidth, screenHeight, "XBox Startup");
         
         if (framerate > 0) SetTargetFPS(framerate);
         if (fullscreen) Fullscreen::Toggle(screenWidth, screenHeight);
 
         camera = { { 0.0f, distance, -6.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, fov, CAMERA_PERSPECTIVE };
     }
+
+#ifdef _WIN32
+    startTitleBarThread();
+    setEmbeddedWindowIcon();
+#endif
 
     rlImGuiSetup(true);
 
