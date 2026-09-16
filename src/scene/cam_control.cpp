@@ -57,7 +57,10 @@ void CameraController::pickPath(int path)
 {
     if (path < 0)
         path = (int)((uint32_t)rng.Rand() & 0x7FFFFFFF);
-    if (path >= numPaths) path = path % numPaths;
+
+    if (path >= numPaths)
+        path = path % numPaths;
+
     curPathNum = path;
 
     int i;
@@ -65,31 +68,58 @@ void CameraController::pickPath(int path)
     {
         if (svCameraList[i].fTime == 0.0f)
         {
-            if (!path) break;
+            if (!path)
+                break;
             path--;
         }
     }
+
     curStartNode = i;
+
     for (i = curStartNode + 1; i < numNodes; i++)
-        if (svCameraList[i].fTime == 0.0f) break;
+    {
+        if (svCameraList[i].fTime == 0.0f)
+            break;
+    }
+
     curVariableNodes = i - curStartNode;
     curNumNodes = curVariableNodes + NUM_FINISH_NODES;
 
     for (int j = 0; j < NUM_FINISH_NODES; j++)
     {
-        finishNodes[j].fTime = FINISH_START_TIME + FINISH_TRANSITION_TIME * ((float)j) / ((float)(NUM_FINISH_NODES - 1));
+        finishNodes[j].fTime =
+            FINISH_START_TIME +
+            FINISH_TRANSITION_TIME * ((float)j) /
+            ((float)(NUM_FINISH_NODES - 1));
+
         finishNodes[j].tension = 0.0f;
         finishNodes[j].bias = 0.0f;
     }
-    fCameraLookatInterpStart = finishNodes[2].fTime;
-    fOOCameraLookatInterpDelta = 1.0f / (finishNodes[5].fTime - fCameraLookatInterpStart);
 
-    const CamControlNode *plast = &svCameraList[curStartNode + curVariableNodes - 1];
-    CamControlNode *pthis = &finishNodes[0];
+    fCameraLookatInterpStart = finishNodes[2].fTime;
+    fOOCameraLookatInterpDelta =
+        1.0f / (finishNodes[5].fTime - fCameraLookatInterpStart);
+
+    const CamControlNode* plast =
+        &svCameraList[curStartNode + curVariableNodes - 1];
+
+    CamControlNode* pthis = &finishNodes[0];
 
     const float slash_start_rad = -95.0f;
     const float slash_end_rad = 132.14f;
-    const float cfYPositions[NUM_FINISH_NODES] = { +95.0f, +30.548f, -70.819f, -150.298f, -220.64f, -243.021f, -261.441f, -287.773f };
+
+    const float cfYPositions[NUM_FINISH_NODES] =
+    {
+        +95.0f,
+        +30.548f,
+        -70.819f,
+        -150.298f,
+        -220.64f,
+        -243.021f,
+        -261.441f,
+        -287.773f
+    };
+
     const float cfZPositions[NUM_FINISH_NODES] = { 0.0f, 0.322f, 1.821f, 2.323f, -11.926f, -39.973f, -60.774f, -90.795f };
     const float cfMinStartDist = 100.0f;
 
@@ -98,61 +128,204 @@ void CameraController::pickPath(int path)
     if (curVariableNodes >= 2)
     {
         vel = Vector3Subtract(getNode(curVariableNodes - 1)->ptPosition, getNode(curVariableNodes - 2)->ptPosition);
-        vel = Vector3Scale(vel, 1.0f / (getNode(curVariableNodes - 1)->fTime - getNode(curVariableNodes - 2)->fTime));
+        vel = Vector3Scale( vel, 1.0f / (
+            getNode(curVariableNodes - 1)->fTime -
+            getNode(curVariableNodes - 2)->fTime
+        ));
     }
     else
-    {
         vel = {0.0f, 0.0f, 0.0f};
-    }
-    pthis->ptPosition = AddScaled(pthis->ptPosition, vel, (pthis->fTime - plast->fTime) * 0.7f);
+
+    pthis->ptPosition = AddScaled(
+        pthis->ptPosition,
+        vel,
+        (pthis->fTime - plast->fTime) * 0.7f
+    );
+
     float vel_adj_len = Vector3Length(pthis->ptPosition);
+
     pthis->ptPosition = Vector3Scale(pthis->ptPosition, 1.0f / vel_adj_len);
+
     Vector3 slash_dir = pthis->ptPosition;
-    float slash_y_offset = std::max(cfMinStartDist - slash_start_rad, vel_adj_len * 1.2f - slash_start_rad);
-    pthis->ptPosition = Vector3Scale(pthis->ptPosition, slash_y_offset + slash_start_rad);
+
+    float slash_y_offset = std::max(
+        cfMinStartDist - slash_start_rad,
+        vel_adj_len * 1.2f - slash_start_rad
+    );
+
+    pthis->ptPosition = Vector3Scale(
+        pthis->ptPosition,
+        slash_y_offset + slash_start_rad
+    );
+
     pthis->vecLookAt = {0.0f, 0.0f, 0.0f};
 
     Vector3 up = {0.0f, 0.0f, 1.0f};
-    Vector3 y_dir = Vector3Scale(slash_dir, -1.0f);
-    Vector3 x_dir = Vector3Normalize(Vector3CrossProduct(y_dir, up));
-    Vector3 z_dir = Vector3CrossProduct(x_dir, y_dir);
+
+    Vector3 y_dir =
+        Vector3Scale(slash_dir, -1.0f);
+
+    Vector3 x_dir =
+        Vector3Normalize(
+            Vector3CrossProduct(y_dir, up)
+        );
+
+    Vector3 z_dir =
+        Vector3CrossProduct(x_dir, y_dir);
 
     xfSlash = MatrixIdentity();
-    xfSlash.m0 = x_dir.x; xfSlash.m4 = y_dir.x; xfSlash.m8  = z_dir.x;
-    xfSlash.m1 = x_dir.y; xfSlash.m5 = y_dir.y; xfSlash.m9  = z_dir.y;
-    xfSlash.m2 = x_dir.z; xfSlash.m6 = y_dir.z; xfSlash.m10 = z_dir.z;
 
-    ptSlashCenter = Vector3Scale(y_dir, -slash_end_rad - slash_y_offset);
+    xfSlash.m0  = x_dir.x;
+    xfSlash.m4  = y_dir.x;
+    xfSlash.m8  = z_dir.x;
+
+    xfSlash.m1  = x_dir.y;
+    xfSlash.m5  = y_dir.y;
+    xfSlash.m9  = z_dir.y;
+
+    xfSlash.m2  = x_dir.z;
+    xfSlash.m6  = y_dir.z;
+    xfSlash.m10 = z_dir.z;
+
+    xfSlash.m12 = -y_dir.x * slash_y_offset;
+    xfSlash.m13 = -y_dir.y * slash_y_offset;
+    xfSlash.m14 = -y_dir.z * slash_y_offset;
+
+    ptSlashCenter =
+        Vector3Scale(
+            y_dir,
+            -slash_end_rad - slash_y_offset
+        );
+
+    auto TransformVectorOnly =
+        [&](const Vector3& v) -> Vector3
+        {
+            return
+            {
+                v.x * xfSlash.m0 +
+                v.y * xfSlash.m4 +
+                v.z * xfSlash.m8,
+
+                v.x * xfSlash.m1 +
+                v.y * xfSlash.m5 +
+                v.z * xfSlash.m9,
+
+                v.x * xfSlash.m2 +
+                v.y * xfSlash.m6 +
+                v.z * xfSlash.m10
+            };
+        };
+
     float y_basis = slash_end_rad;
+
     for (int j2 = 1; j2 < NUM_FINISH_NODES; j2++)
     {
         plast = pthis++;
-        Vector3 pt_in_slash = {0.0f, cfYPositions[j2] + y_basis, cfZPositions[j2]};
-        pthis->ptPosition = Vector3Add(Vector3Transform(pt_in_slash, xfSlash), ptSlashCenter);
-        pthis->vecLookAt = {0.0f, 0.0f, 0.0f};
+
+        Vector3 pt_in_slash =
+        {
+            0.0f,
+            cfYPositions[j2] + y_basis,
+            cfZPositions[j2]
+        };
+
+        pthis->ptPosition =
+            Vector3Add(
+                TransformVectorOnly(pt_in_slash),
+                ptSlashCenter
+            );
+
+        pthis->vecLookAt =
+            {0.0f, 0.0f, 0.0f};
     }
 
-    Vector3 t = {0.0f, slash_end_rad, 25.0f};
-    ptFinalLookAt = Vector3Add(Vector3Transform(t, xfSlash), ptSlashCenter);
+    Vector3 t =
+    {
+        0.0f,
+        slash_end_rad,
+        25.0f
+    };
+
+    ptFinalLookAt =
+        Vector3Add(
+            TransformVectorOnly(t),
+            ptSlashCenter
+        );
 
     for (int j = 0; j < curNumNodes; j++)
     {
-        CamControlNode *node = getNode(j);
-        node->vecVelocity = {0.0f, 0.0f, 0.0f};
-        node->vecLookAtW = {0.0f, 0.0f, 0.0f};
+        CamControlNode* node = getNode(j);
+
+        node->vecVelocity =
+            {0.0f, 0.0f, 0.0f};
+
+        node->vecLookAtW =
+            {0.0f, 0.0f, 0.0f};
+
         if (j)
         {
-            Vector3 delta = Vector3Subtract(node->ptPosition, getNode(j - 1)->ptPosition);
-            node->vecVelocity = AddScaled(node->vecVelocity, delta, (1.0f - node->tension) * (1.0f + node->bias) * 0.5f);
-            delta = Vector3Subtract(node->vecLookAt, getNode(j - 1)->vecLookAt);
-            node->vecLookAtW = AddScaled(node->vecLookAtW, delta, (1.0f - node->tension) * (1.0f + node->bias) * 0.5f);
+            Vector3 delta =
+                Vector3Subtract(
+                    node->ptPosition,
+                    getNode(j - 1)->ptPosition
+                );
+
+            node->vecVelocity =
+                AddScaled(
+                    node->vecVelocity,
+                    delta,
+                    (1.0f - node->tension) *
+                    (1.0f + node->bias) *
+                    0.5f
+                );
+
+            delta =
+                Vector3Subtract(
+                    node->vecLookAt,
+                    getNode(j - 1)->vecLookAt
+                );
+
+            node->vecLookAtW =
+                AddScaled(
+                    node->vecLookAtW,
+                    delta,
+                    (1.0f - node->tension) *
+                    (1.0f + node->bias) *
+                    0.5f
+                );
         }
+
         if (j < curNumNodes - 1)
         {
-            Vector3 delta = Vector3Subtract(getNode(j + 1)->ptPosition, node->ptPosition);
-            node->vecVelocity = AddScaled(node->vecVelocity, delta, (1.0f - node->tension) * (1.0f - node->bias) * 0.5f);
-            delta = Vector3Subtract(getNode(j + 1)->vecLookAt, node->vecLookAt);
-            node->vecLookAtW = AddScaled(node->vecLookAtW, delta, (1.0f - node->tension) * (1.0f - node->bias) * 0.5f);
+            Vector3 delta =
+                Vector3Subtract(
+                    getNode(j + 1)->ptPosition,
+                    node->ptPosition
+                );
+
+            node->vecVelocity =
+                AddScaled(
+                    node->vecVelocity,
+                    delta,
+                    (1.0f - node->tension) *
+                    (1.0f - node->bias) *
+                    0.5f
+                );
+
+            delta =
+                Vector3Subtract(
+                    getNode(j + 1)->vecLookAt,
+                    node->vecLookAt
+                );
+
+            node->vecLookAtW =
+                AddScaled(
+                    node->vecLookAtW,
+                    delta,
+                    (1.0f - node->tension) *
+                    (1.0f - node->bias) *
+                    0.5f
+                );
         }
     }
 }
