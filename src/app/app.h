@@ -52,8 +52,8 @@ private:
     int32_t seed = defSeed;
     bool cursorEnabled = true;
 
-    int screenWidth = 960;
-    int screenHeight = 720;
+    int screenWidth = 0;
+    int screenHeight = 0;
     Camera3D camera;
     Camera3D homeCamera;
 

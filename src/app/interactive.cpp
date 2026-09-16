@@ -53,7 +53,7 @@ void XboxStartup::updateInteractive()
         {
             if (audio) audio->restart();
             camController.pickPath(cameraPath);
-            greenFog->restart();
+            greenFog->restart(seed);
         }
     }
 

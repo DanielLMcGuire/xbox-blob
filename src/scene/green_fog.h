@@ -8,10 +8,10 @@ class Blob;
 class GreenFog
 {
 public:
-    void create();
+    void create(int seed);
     void unload();
 
-    void restart();
+    void restart(int seed);
 
     void render(const Camera3D &camera, const Blob &blob, float blobIntensity, float fElapsedTime);
 
@@ -29,4 +29,5 @@ private:
     int glowLoc_mvp = -1, glowLoc_tex0 = -1, glowLoc_tint = -1;
 
     QRand rng;
+    int rngSeed = defSeed;
 };

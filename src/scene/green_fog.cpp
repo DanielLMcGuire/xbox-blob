@@ -41,7 +41,7 @@ Vector3 ProjectToNDC(Vector3 p, const Matrix &m)
 }
 } // namespace
 
-void GreenFog::create()
+void GreenFog::create(int seed)
 {
     QuadVertex verts[4];
     verts[0].pos = {-1, -1, 1};
@@ -148,7 +148,7 @@ void GreenFog::create()
     glowLoc_tex0 = GetShaderLocation(glowShader, "tex0");
     glowLoc_tint = GetShaderLocation(glowShader, "tint");
 
-    restart();
+    restart(seed);
 }
 
 void GreenFog::unload()
@@ -158,12 +158,13 @@ void GreenFog::unload()
     for (auto &t : plasmaTex) UnloadTexture(t);
 }
 
-void GreenFog::restart()
+void GreenFog::restart(int seed)
 {
     for (auto &t : plasmaTex) UnloadTexture(t);
     int tffonp = 255 / 3;
-    int seed = rng.Rand();
-    auto images = CreatePlasmaMapImages(3, PLASMA_SIZE, 5 * tffonp, seed, 0, 255 / 3);
+    rng.SetSeed(rngSeed);
+    int s = rng.Rand();
+    auto images = CreatePlasmaMapImages(3, PLASMA_SIZE, 5 * tffonp, s, 0, 255 / 3);
     for (int i = 0; i < 3; i++)
     {
         plasmaTex[i] = LoadTextureFromImage(images[i]);

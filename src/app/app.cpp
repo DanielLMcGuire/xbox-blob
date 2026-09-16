@@ -1,6 +1,7 @@
 #include "app.h"
 #include "../util/fullscreen.h"
-#include "rlgl.h"
+#include "../util/embed.h"
+#include "imgui.h"
 #include "rlImGui.h"
 
 #include <cstdio>
@@ -12,19 +13,6 @@
     #undef DrawText
 #endif
 
-void XboxStartup::update()
-{
-    if (WindowShouldClose())
-    {
-        running = false;
-        return;
-    }
-    rlDisableBackfaceCulling();
-    if (captureMode) updateCapture();
-    else updateInteractive();
-    rlEnableBackfaceCulling();
-}
-
 XboxStartup::XboxStartup(int argc, char** argv)
 {
 #if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB)
@@ -34,21 +22,26 @@ XboxStartup::XboxStartup(int argc, char** argv)
 
     if (captureMode)
     {
-        screenWidth = 1280;
-        screenHeight = 720;
+        if (screenWidth == 0) screenWidth = 1280;
+        if (screenHeight == 0) screenHeight = 720;
         float distance = 45.0f;
 
         std::filesystem::create_directories("frames");
         if (msaaEnabled)
             SetConfigFlags(FLAG_MSAA_4X_HINT);
         InitWindow(screenWidth, screenHeight, "Xbox Startup | Rendering...");
+        int monitor = GetCurrentMonitor();
+        int width = GetMonitorWidth(monitor);
+        int height = GetMonitorHeight(monitor);
+        if (width >= screenWidth || height >= screenHeight || fullscreen)
+            Fullscreen::Toggle(width, height);
         camera = { { 0.0f, distance, -6.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, fov, CAMERA_PERSPECTIVE };
         if (framerate == 0) framerate = 240; 
     }
     else
     {
-        screenWidth = 960;
-        screenHeight = 720;
+        if (screenWidth == 0) screenWidth = 640;
+        if (screenHeight == 0) screenHeight = 480;
         float distance = 35.0f;
 
         unsigned int cfg = FLAG_WINDOW_RESIZABLE;
@@ -78,7 +71,7 @@ XboxStartup::XboxStartup(int argc, char** argv)
     logoRenderer = new LogoRenderer();
     logoRenderer->create();
     greenFog = new GreenFog();
-    greenFog->create();
+    greenFog->create(seed);
     camController.init();
     camController.pickPath(cameraPath);
 
@@ -111,9 +104,25 @@ XboxStartup::XboxStartup(int argc, char** argv)
         nullptr,
         0
     );
+
+    ImGuiIO& io = ImGui::GetIO();
+    ImFontConfig font_cfg;
+    font_cfg.FontDataOwnedByAtlas = false;
+    ImFont* customFont = io.Fonts->AddFontFromMemoryTTF(
+        (void*)font_data, 
+        font_data_size, 
+        13.0f, 
+        &font_cfg
+    );
+    io.FontDefault = customFont;
 #else
     font = LoadFont("../assets/xbox.ttf");
+    ImGuiIO& io = ImGui::GetIO();
+    ImFontConfig font_cfg;
+    ImFont* customFont = io.Fonts->AddFontFromFileTTF("../assets/xbox.ttf", 13.0f);
+    io.FontDefault = customFont;
 #endif
+
     if (!IsFontValid(font)) font = GetFontDefault();
 
     if (captureMode) driver->loop = false;
@@ -184,6 +193,12 @@ void XboxStartup::parseArgs(int argc, char** argv)
         else if (arg == "-w" || arg == "--wireframe") wireframeMode = true;
         else if (arg == "-s" || arg == "--seed") {
             if (i + 1 < argc) seed = static_cast<int32_t>(std::stoul(argv[++i], nullptr, 16));
+        }
+        else if (arg == "-x") {
+            if (i + 1 < argc) screenWidth = std::stoi(argv[++i]);
+        }
+        else if (arg == "-y") {
+            if (i + 1 < argc) screenHeight = std::stoi(argv[++i]);
         }
         else if (arg == "--help" || arg == "-h" || arg == "/?")
         {
