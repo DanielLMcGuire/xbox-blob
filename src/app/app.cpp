@@ -33,7 +33,7 @@ XboxStartup::XboxStartup(int argc, char** argv)
         int monitor = GetCurrentMonitor();
         int width = GetMonitorWidth(monitor);
         int height = GetMonitorHeight(monitor);
-        if (width >= screenWidth || height >= screenHeight || fullscreen)
+        if (width <= screenWidth || height <= screenHeight || fullscreen)
             Fullscreen::Toggle(width, height);
         camera = { { 0.0f, distance, -6.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, fov, CAMERA_PERSPECTIVE };
         if (framerate == 0) framerate = 240; 
