@@ -10,19 +10,26 @@ void NoclipCamera::SyncFromCamera(const Camera3D& camera)
     yaw = atan2f(dir.y, dir.x);
 }
 
-void NoclipCamera::Toggle(Camera3D& camera, const Camera3D& homeCamera)
+void NoclipCamera::Toggle(
+    Camera3D& camera,
+    const Camera3D& homeCamera,
+    bool switchCamera
+)
 {
-    active = !active;
-    if (active)
+    if (!active)
     {
         SyncFromCamera(camera);
+        active = true;
         DisableCursor();
+        return;
     }
-    else
-    {
+
+    active = false;
+
+    if (switchCamera)
         camera = homeCamera;
-        EnableCursor();
-    }
+
+    EnableCursor();
 }
 
 void NoclipCamera::Update(Camera3D& camera, float dt)

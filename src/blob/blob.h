@@ -28,6 +28,8 @@ public:
     void GetLightForPosition(Vector3 queryPosition, Vector3* outLightPos, float* outIntensity) const;
     inline float GetLightIntensity() const { return lightIntensity; }
 
+    inline Texture2D GetGlowTexture() const { return glowTexture; }
+
     Vector4 color{ 0.25f, 1.0f, 0.15f, 1.0f };
     Vector3 position{ 0, 0, 0 };
     Vector3 scale{ 1, 1, 1 };

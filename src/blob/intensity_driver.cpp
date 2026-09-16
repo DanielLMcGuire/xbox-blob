@@ -4,6 +4,7 @@
 #include "blob.h"
 
 #include <cmath>
+#include <algorithm>
 
 void BlobIntensityDriver::Init()
 {
@@ -13,13 +14,27 @@ void BlobIntensityDriver::Init()
     InitPulses();
 }
 
+void BlobIntensityDriver::Reset(Blob& blob)
+{
+    iidt = 0.0f;
+    smoothedIntensity = intensity = baseIntensity = DEMO_START_INTENSITY;
+    timeElapsed = 0.0f;
+    
+    rng.SetSeed(startSeed);
+    InitPulses();
+    BlobSetRandomSeed(startSeed);
+    blob.Restart();
+}
+
 bool BlobIntensityDriver::Advance(float dt, Blob& blob)
 {
     if (dt > 1.0f) dt = 0.001f;
     timeElapsed += dt;
 
     if (timeElapsed < BLOB_ZERO_INTENSE_END_TIME)
+    {
         baseIntensity = 0.0f;
+    }
     else
     {
         float t = (timeElapsed - BLOB_ZERO_INTENSE_END_TIME) * OO_MAX_INTENSITY_DELTA;
@@ -37,18 +52,35 @@ bool BlobIntensityDriver::Advance(float dt, Blob& blob)
     if (timeElapsed >= DEMO_TOTAL_TIME)
     {
         if (!loop) return false;
-
-        iidt = 0.0f;
-        smoothedIntensity = intensity = baseIntensity = DEMO_START_INTENSITY;
-        timeElapsed = 0.0f;
-        rng.SetSeed(startSeed);
-        InitPulses();
-        BlobSetRandomSeed(startSeed);
-        blob.Restart();
+        Reset(blob);
     }
 
     blob.AdvanceTime(timeElapsed, dt);
     return true;
+}
+
+void BlobIntensityDriver::ScrubTo(float targetTime, Blob& blob)
+{
+    targetTime = std::max(0.0f, targetTime);
+    if (!loop) {
+        targetTime = std::min(targetTime, DEMO_TOTAL_TIME);
+    } else {
+        targetTime = std::fmod(targetTime, DEMO_TOTAL_TIME);
+    }
+
+    Reset(blob);
+
+    const float SIM_STEP = 1.0f / 60.0f;
+    while (timeElapsed + SIM_STEP < targetTime)
+    {
+        Advance(SIM_STEP, blob);
+    }
+
+    float remainder = targetTime - timeElapsed;
+    if (remainder > 0.0f)
+    {
+        Advance(remainder, blob);
+    }
 }
 
 void BlobIntensityDriver::InitPulses()

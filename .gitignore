@@ -1,5 +1,5 @@
 build
-blob.mp4
+blob*.mp4
 /frames
 /build-web
 **/imgui.ini

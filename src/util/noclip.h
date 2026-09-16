@@ -13,7 +13,7 @@ struct NoclipCamera
 
     void SyncFromCamera(const Camera3D& camera);
 
-    void Toggle(Camera3D& camera, const Camera3D& homeCamera);
+    void Toggle(Camera3D& camera, const Camera3D& homeCamera, bool switchCamera);
 
     void Update(Camera3D& camera, float dt);
 };

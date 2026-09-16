@@ -14,12 +14,11 @@ add_subdirectory("src")
 
 add_executable(xbox_startup
     src/util/noclip.cpp
-
-    src/app.cpp
     src/main.cpp
 )
 
-target_link_libraries(xbox_startup PRIVATE raylib rlimgui scene sos blob)
+
+target_link_libraries(xbox_startup PRIVATE app raylib)
 
 target_include_directories(sos PRIVATE "${SOUND_OUT_DIR}")
 

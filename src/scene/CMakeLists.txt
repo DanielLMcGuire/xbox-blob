@@ -5,6 +5,11 @@ add_library(scene
     ${CMAKE_CURRENT_SOURCE_DIR}/scene_texgen.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/scene_mesh_gen.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/scene_renderer.cpp
+    
+    ${CMAKE_CURRENT_SOURCE_DIR}/logo_mesh_gen.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/logo_renderer.cpp
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/green_fog.cpp
 )
 
 target_link_libraries(scene PRIVATE raylib)

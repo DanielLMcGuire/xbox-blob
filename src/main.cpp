@@ -1,4 +1,4 @@
-#include "app.h"
+#include "app/app.h"
 
 #if defined(__EMSCRIPTEN__)
 #include <emscripten/emscripten.h>

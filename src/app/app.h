@@ -2,18 +2,22 @@
 
 #include "raylib.h"
 #include "raymath.h"
-#include "blob/blob.h"
-#include "blob/intensity_driver.h"
-#include "util/qrand.h"
-#include "util/noclip.h"
-#include "sos/sos_audio.h"
+#include "../blob/blob.h"
+#include "../blob/intensity_driver.h"
+#include "../util/qrand.h"
+#include "../util/noclip.h"
+#include "../sos/sos_audio.h"
 
-#include "scene/scene_renderer.h"
-#include "scene/cam_control.h"
+#include "../scene/scene_renderer.h"
+#include "../scene/logo_renderer.h"
+#include "../scene/green_fog.h"
+#include "../scene/cam_control.h"
 
 #include <algorithm>
 #include <cmath>
 #include <string>
+
+#define TOGGLE(x) do { if (x) { x = false; } else { x = true; } } while(0)
 
 class XboxStartup
 {
@@ -61,10 +65,15 @@ private:
     NoclipCamera* noclip = nullptr;
     SOS::Audio* audio = nullptr;
     IntroSceneRenderer* sceneRenderer = nullptr;
+    LogoRenderer* logoRenderer = nullptr;
+    GreenFog* greenFog = nullptr;
 
     CameraController camController;
+    int cameraPath = 0;
     bool renderSceneGeom = true;
-    bool renderSlash = true;
+    bool renderSlash = false;
+    bool manualRender = false;
+    bool isPaused = false;
 
     double lastClickTime;
     int frameNumber = 0;
