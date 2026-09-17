@@ -517,8 +517,8 @@ void Sequencer::render(float* output, int frameCount)
 
     for (int f = 0; f < frameCount; f++)
     {
-        output[f * 2] = std::clamp(monoMixL[f] * 0.45f, -1.0f, 1.0f);
-        output[f * 2 + 1] = std::clamp(monoMixR[f] * 0.45f, -1.0f, 1.0f);
+        output[f * 2]     = std::tanh(monoMixL[f] * 0.45f);
+        output[f * 2 + 1] = std::tanh(monoMixR[f] * 0.45f);
     }
 }
 

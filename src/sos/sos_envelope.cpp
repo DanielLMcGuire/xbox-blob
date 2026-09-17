@@ -1,5 +1,6 @@
 #include "sos_envelope.h"
 #include <algorithm>
+#include <cmath>
 
 namespace SOS 
 {
@@ -157,8 +158,8 @@ lbl_HOLD:
 
 lbl_DECAY:
     count++;
-    level = 1.0f - (1.0f - sustainLevel) * ((float)count / (float)decaySamples);
-    if (count >= decaySamples)
+    level = std::exp(-7.344f * ((float)count / (float)decaySamples));
+    if (level <= sustainLevel || count >= decaySamples)
     {
         level = sustainLevel;
         state = SUSTAIN;
@@ -171,7 +172,7 @@ lbl_SUSTAIN:
 
 lbl_RELEASE:
     count++;
-    level = releaseStart * (1.0f - ((float)count / (float)releaseSamples));
+    level = releaseStart * std::exp(-6.91f * ((float)count / (float)releaseSamples));
     if (count >= releaseSamples)
     {
         level = 0.0f;
@@ -226,8 +227,8 @@ lbl_OFF:
 
         case DECAY:
             count++;
-            level = 1.0f - (1.0f - sustainLevel) * ((float)count / (float)decaySamples);
-            if (count >= decaySamples)
+            level = std::exp(-7.344f * ((float)count / (float)decaySamples));
+            if (level <= sustainLevel || count >= decaySamples)
             {
                 level = sustainLevel;
                 state = SUSTAIN;
@@ -240,7 +241,7 @@ lbl_OFF:
 
         case RELEASE:
             count++;
-            level = releaseStart * (1.0f - ((float)count / (float)releaseSamples));
+            level = releaseStart * std::exp(-6.91f * ((float)count / (float)releaseSamples));
             if (count >= releaseSamples)
             {
                 level = 0.0f;
