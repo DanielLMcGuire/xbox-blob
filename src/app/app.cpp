@@ -221,7 +221,7 @@ void XboxStartup::parseArgs(int argc, char** argv)
                         "  %s -w, --wireframe    Enable wireframe mode on startup\n"
                         "  %s -s, --seed         Set the RNG seed (hex, e.g. %#08" PRIx32 ")\n\n"
                         "KEYBINDS:\n"
-                        "  `                     Toggle UI\n"
+                        "  ~                     Toggle UI\n"
                         "  F2                    Toggle FPS overlay\n"
                         "  F5                    Toggle wireframe\n"
                         "  F9                    Toggle freecam\n"
