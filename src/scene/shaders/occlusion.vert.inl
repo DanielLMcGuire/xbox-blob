@@ -9,13 +9,13 @@ uniform float fogRadius;
 uniform float cameraRadiusFromBlob;
 uniform int isBackdrop;
 
-out float viewDist;
+out float v_depthVal;
 
 void main()
 {
     if (isBackdrop == 1)
     {
-        viewDist = 1.0;
+        v_depthVal = 1.0;
         gl_Position = vec4(vertexPosition.xy, 1.0, 1.0);
     }
     else
@@ -23,7 +23,7 @@ void main()
         vec3 worldPos = (model * vec4(vertexPosition, 1.0)).xyz;
         float viewDist = length(worldPos - cameraPos);
 
-        viewDist = clamp((viewDist - cameraRadiusFromBlob + fogRadius) / (2.0 * fogRadius), 0.0, 1.0);
+        v_depthVal = clamp((viewDist - cameraRadiusFromBlob + fogRadius) / (2.0 * fogRadius), 0.0, 1.0);
         gl_Position = mvp * vec4(vertexPosition, 1.0);
     }
 }
