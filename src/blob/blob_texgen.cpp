@@ -27,8 +27,8 @@ namespace {
 
 void Blob::BuildGlowTexture()
 {
-    constexpr int WIDTH = 256;
-    constexpr int HEIGHT = 256;
+    constexpr int WIDTH = 1024;
+    constexpr int HEIGHT = 1024;
 
     constexpr uint32_t NOISE = 0;
     constexpr uint32_t INITIAL_SEED = 12345;

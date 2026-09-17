@@ -12,7 +12,7 @@
 
 namespace
 {
-constexpr int PLASMA_SIZE = 256;
+constexpr int PLASMA_SIZE = 512;
 constexpr float MUL_SCALE = 0.005f;
 
 struct QuadVertex

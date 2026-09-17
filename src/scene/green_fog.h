@@ -30,7 +30,7 @@ private:
     Shader glowShader{};
     int glowLoc_mvp = -1, glowLoc_tex0 = -1, glowLoc_tint = -1;
 
-    static constexpr int INTENSITY_TEX_W = 1024, INTENSITY_TEX_H = 512;
+    static constexpr int INTENSITY_TEX_W = 4096, INTENSITY_TEX_H = 2048;
     unsigned int intensityFBO = 0, intensityColorTex = 0, intensityDepthTex = 0;
     
     unsigned int intensityQuadVAO = 0, intensityQuadVBO = 0;
