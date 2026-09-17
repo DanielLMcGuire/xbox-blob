@@ -18,7 +18,7 @@ public:
                 float blobIntensity, float fElapsedTime);
 
 private:
-    unsigned int quadVAO = 0, quadVBO = 0;
+    unsigned int quadVAO = 0, quadVBO = 0, quadEBO = 0;
     Texture2D plasmaTex[3]{};
 
     Shader fogShader{};
@@ -26,14 +26,14 @@ private:
     int loc_intensityMap = -1, loc_plasmaMap[3] = {-1, -1, -1};
     int loc_useIntensityMap = -1, loc_intensityTint = -1, loc_glowColor = -1;
 
-    unsigned int glowVAO = 0, glowVBO = 0;
+    unsigned int glowVAO = 0, glowVBO = 0, glowEBO = 0;
     Shader glowShader{};
     int glowLoc_mvp = -1, glowLoc_tex0 = -1, glowLoc_tint = -1;
 
     static constexpr int INTENSITY_TEX_W = 4096, INTENSITY_TEX_H = 2048;
     unsigned int intensityFBO = 0, intensityColorTex = 0, intensityDepthTex = 0;
     
-    unsigned int intensityQuadVAO = 0, intensityQuadVBO = 0;
+    unsigned int intensityQuadVAO = 0, intensityQuadVBO = 0, intensityQuadEBO = 0;
 
     Shader occlusionShader{};
     int occLoc_mvp = -1;
