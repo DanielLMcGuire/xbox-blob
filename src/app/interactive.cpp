@@ -105,6 +105,15 @@ void XboxStartup::updateInteractive()
             float intensity = driver->GetIntensity();
             float pulseIntensity = driver->GetPulseIntensity();
             float baseIntensity = driver->GetBaseIntensity();
+
+            if (manualRender && IsGamepadAvailable(0))
+            {
+                float trigger = (GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_TRIGGER) + 1.0f) * 0.5f;
+                trigger = std::clamp(trigger, 0.0f, 1.0f);
+                intensity *= trigger;
+                pulseIntensity *= trigger;
+                baseIntensity *= trigger;
+            }
             
             if (renderSceneGeom) 
                 sceneRenderer->render(camera, *blob, true);
