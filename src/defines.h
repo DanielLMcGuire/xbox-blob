@@ -1,5 +1,7 @@
 #pragma once
 
+#include "raylib.h"
+
 constexpr float DEMO_TOTAL_TIME = 8.0f;
 constexpr double DOUBLE_CLICK_TIME = 0.3f;
 
@@ -35,4 +37,4 @@ constexpr float GLOW_FADE_CIRCLE_MUL = (1.0f / 0.3f);
 constexpr float GLOW_FADE_SCREEN_START = (GLOW_FADE_CIRCLE_START + 0.3f);
 constexpr float GLOW_FADE_SCREEN_MUL = (1.0f / 0.25f);
 
-#define XD_TEXT_FOREGROUND CLITERAL(Color){ 134, 185, 66, 255 }
+#define XD_TEXT_TITLE CLITERAL(Color){ 190, 250, 94, 255 }

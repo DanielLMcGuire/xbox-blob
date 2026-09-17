@@ -3,6 +3,7 @@
 #include "../util/embed.h"
 #include "imgui.h"
 #include "rlImGui.h"
+#include "xd_ui_theme.h"
 
 #include <cstdio>
 #include <filesystem>
@@ -129,6 +130,8 @@ XboxStartup::XboxStartup(int argc, char** argv)
     io.FontDefault = customFont;
 #endif
 
+    ApplyXboxDashboardTheme();
+
     if (!IsFontValid(font)) font = GetFontDefault();
 
     if (captureMode) driver->loop = false;
@@ -210,16 +213,16 @@ void XboxStartup::parseArgs(int argc, char** argv)
         {
             std::string program = std::filesystem::path(argv[0]).stem().string(); 
             std::puts(TextFormat("%s [OPTIONS...]\n\nOPTIONS:\n"
-                        "  %s -c, --capture      Render a capture\n"
+                        "  %s -c, --capture            Render a capture\n"
                         "  %s -path,--camera-path      Choose camera path (0-3, -1=random,0=stock)\n"
-                        "  %s -fs, --fullscreen  Enter fullscreen on startup\n"
-                        "  %s -na, --no-audio    Disable audio\n"
-                        "  %s -f, --fps          Set framerate (VSYNC if not set)\n"
-                        "  %s -df, --draw-fps    Draw FPS to screen\n"
-                        "  %s -m, --msaa         Enable MSAA (Antialiasing)\n"
-                        "  %s -g, --grid         Show 3D grid\n"
-                        "  %s -w, --wireframe    Enable wireframe mode on startup\n"
-                        "  %s -s, --seed         Set the RNG seed (hex, e.g. %#08" PRIx32 ")\n\n"
+                        "  %s -fs, --fullscreen        Enter fullscreen on startup\n"
+                        "  %s -na, --no-audio          Disable audio\n"
+                        "  %s -f, --fps                Set framerate (VSYNC if not set)\n"
+                        "  %s -df, --draw-fps          Draw FPS to screen\n"
+                        "  %s -m, --msaa               Enable MSAA (Antialiasing)\n"
+                        "  %s -g, --grid               Show 3D grid\n"
+                        "  %s -w, --wireframe          Enable wireframe mode on startup\n"
+                        "  %s -s, --seed               Set the RNG seed (hex, e.g. %#08" PRIx32 ")\n\n"
                         "KEYBINDS:\n"
                         "  ~                     Toggle UI\n"
                         "  F2                    Toggle FPS overlay\n"

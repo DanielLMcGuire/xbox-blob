@@ -2,6 +2,7 @@
 #include "../util/fullscreen.h"
 #include "imgui.h"
 #include "rlImGui.h"
+#include "xd_ui_theme.h"
 
 #if defined(_WIN32)
     #undef DrawText
@@ -11,16 +12,16 @@ void XboxStartup::updateUI()
 {
     rlImGuiBegin();
 
-    if (ImGui::Begin("Options", &showGui))
+    if (XboxBegin("Options", &showGui))
     {
-        ImGui::TextUnformatted("Visual");
+        XboxTitleText("Visual");
         ImGui::Separator();
 
         ImGui::Checkbox("Show 3D Grid (G)", &gridEnabled);
         ImGui::Checkbox("Draw FPS Overlay (F2)", &drawFps);
 #if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB)
         ImGui::Checkbox("Wireframe Mode (F5)", &wireframeMode);
-        if (ImGui::Button("Toggle Fullscreen (F11 / Alt+Enter)"))
+        if (XboxButton("Toggle Fullscreen (F11 / Alt+Enter)"))
             Fullscreen::Toggle(screenWidth, screenHeight);
 #endif
         ImGui::SliderInt("Camera Path", &cameraPath, -1, 3);
@@ -30,7 +31,7 @@ void XboxStartup::updateUI()
         ImGui::Checkbox("Render Logo", &renderSlash);
 
         ImGui::Spacing();
-        ImGui::TextUnformatted("Time");
+        XboxTitleText("Time");
         ImGui::Separator();
 
         ImGui::Checkbox("Pause (Space)", &isPaused);

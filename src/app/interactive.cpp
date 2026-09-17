@@ -135,7 +135,7 @@ void XboxStartup::updateInteractive()
 #endif
 
     if (drawFps)
-        DrawTextEx(font, TextFormat("FPS: %i", GetFPS()), { 10, 10 }, font.baseSize, fontSpacing, XD_TEXT_FOREGROUND);
+        DrawTextEx(font, TextFormat("FPS: %i", GetFPS()), { 10, 10 }, font.baseSize, fontSpacing, XD_TEXT_TITLE);
 
     if (noclip->active) {
         float yPos = TextSolve::solveBottomText(font, fontSpacing, 10);
@@ -145,7 +145,7 @@ void XboxStartup::updateInteractive()
             { 10, yPos },
             font.baseSize,
             fontSpacing,
-            XD_TEXT_FOREGROUND
+            XD_TEXT_TITLE
         );
     }
     
