@@ -15,4 +15,4 @@ xbox_startup --capture --msaa
 ./scripts/capture # outputs blob.mp4 to ./
 ```
 
-https://github.com/user-attachments/assets/147b77b9-57a3-40a6-9f43-92b5a2c59f25
+https://github.com/user-attachments/assets/62a48c97-93d0-4a97-8428-4f57eee9a890
