@@ -385,7 +385,7 @@ void Blob::GetLightForPosition(Vector3 queryPosition, Vector3* outLightPos, floa
 }
 
 void Blob::Render(const Camera3D& camera, float pulseIntensity, float blobIntensity,
-                   float baseBlobIntensity, float elapsedTime)
+                 float baseBlobIntensity, float elapsedTime)
 {
     lightIntensity = blobIntensity + pulseIntensity;
     Matrix view = MatrixLookAt(camera.position, camera.target, camera.up);
@@ -405,11 +405,17 @@ void Blob::Render(const Camera3D& camera, float pulseIntensity, float blobIntens
 
         BeginBlendMode(BLEND_ADDITIVE);
         rlDisableDepthMask();
+        rlDisableDepthTest();
+
         DrawBillboardPro(camera, glowTexture,
-                          Rectangle{ 0, 0, (float)glowTexture.width, (float)glowTexture.height },
-                          position, camera.up,
-                          Vector2{ haloSize, haloSize }, Vector2{ haloSize * 0.5f, haloSize * 0.5f },
-                          0.0f, tint);
+                         Rectangle{ 0, 0, (float)glowTexture.width, (float)glowTexture.height },
+                         position, camera.up,
+                         Vector2{ haloSize, haloSize }, Vector2{ haloSize * 0.5f, haloSize * 0.5f },
+                         0.0f, tint);
+
+        rlDrawRenderBatchActive();
+
+        rlEnableDepthTest();
         rlEnableDepthMask();
         EndBlendMode();
     }
@@ -422,18 +428,18 @@ void Blob::Render(const Camera3D& camera, float pulseIntensity, float blobIntens
     Vector4 litColor = Vector4Scale(color, colorIntensity);
     Vector4 ambientColor = Vector4Scale(color, 0.0f);
 
-BeginBlendMode(BLEND_ALPHA);
-BeginShaderMode(blobShader);
-SetShaderValueMatrix(blobShader, blobLoc_mvp, viewProj);
-SetShaderValue(blobShader, blobLoc_eyePos, &camera.position, SHADER_UNIFORM_VEC3);
-SetShaderValue(blobShader, blobLoc_scaling, &scaledRadius, SHADER_UNIFORM_VEC3);
-SetShaderValue(blobShader, blobLoc_ooScaling, &ooScaledRadius, SHADER_UNIFORM_VEC3);
-SetShaderValue(blobShader, blobLoc_center, &position, SHADER_UNIFORM_VEC3);
-SetShaderValue(blobShader, blobLoc_baseColor, &litColor, SHADER_UNIFORM_VEC4);
-SetShaderValue(blobShader, blobLoc_ambientColor, &ambientColor, SHADER_UNIFORM_VEC4);
+    BeginBlendMode(BLEND_ALPHA);
+    BeginShaderMode(blobShader);
+    SetShaderValueMatrix(blobShader, blobLoc_mvp, viewProj);
+    SetShaderValue(blobShader, blobLoc_eyePos, &camera.position, SHADER_UNIFORM_VEC3);
+    SetShaderValue(blobShader, blobLoc_scaling, &scaledRadius, SHADER_UNIFORM_VEC3);
+    SetShaderValue(blobShader, blobLoc_ooScaling, &ooScaledRadius, SHADER_UNIFORM_VEC3);
+    SetShaderValue(blobShader, blobLoc_center, &position, SHADER_UNIFORM_VEC3);
+    SetShaderValue(blobShader, blobLoc_baseColor, &litColor, SHADER_UNIFORM_VEC4);
+    SetShaderValue(blobShader, blobLoc_ambientColor, &ambientColor, SHADER_UNIFORM_VEC4);
 
-rlUpdateVertexBuffer(blobDynamicVBO, changingVertices.data(),
-                      (int)(changingVertices.size() * sizeof(Vector4)), 0);
+    rlUpdateVertexBuffer(blobDynamicVBO, changingVertices.data(),
+                          (int)(changingVertices.size() * sizeof(Vector4)), 0);
 
 #if defined(__EMSCRIPTEN__) || defined(PLATFORM_WEB)
     rlEnableVertexBuffer(blobStaticVBO);
@@ -449,7 +455,7 @@ rlUpdateVertexBuffer(blobDynamicVBO, changingVertices.data(),
     rlEnableVertexArray(blobVAO);
 #endif
 
-rlDrawVertexArrayElements(0, (int)blobIndexCount, nullptr);
+    rlDrawVertexArrayElements(0, (int)blobIndexCount, nullptr);
 
 #if defined(__EMSCRIPTEN__) || defined(PLATFORM_WEB)
     rlDisableVertexBufferElement();
@@ -460,19 +466,18 @@ rlDrawVertexArrayElements(0, (int)blobIndexCount, nullptr);
     rlDisableVertexArray();
 #endif
 
-EndShaderMode();
+    EndShaderMode();
 
+    Vector4 blobletColor = Vector4Scale(color, 0.3f * blobIntensity);
+    Vector4 blobletAmbient = Vector4Scale(color, 0.2f);
 
-Vector4 blobletColor = Vector4Scale(color, 0.3f * blobIntensity);
-Vector4 blobletAmbient = Vector4Scale(color, 0.2f);
-
-BeginShaderMode(blobletShader);
-SetShaderValueMatrix(blobletShader, bloLoc_mvp, viewProj);
-SetShaderValue(blobletShader, bloLoc_eyePos, &camera.position, SHADER_UNIFORM_VEC3);
-SetShaderValue(blobletShader, bloLoc_baseColor, &blobletColor, SHADER_UNIFORM_VEC4);
-SetShaderValue(blobletShader, bloLoc_ambientColor, &blobletAmbient, SHADER_UNIFORM_VEC4);
-float alphaScale = 2.0f;
-SetShaderValue(blobletShader, bloLoc_alphaScale, &alphaScale, SHADER_UNIFORM_FLOAT);
+    BeginShaderMode(blobletShader);
+    SetShaderValueMatrix(blobletShader, bloLoc_mvp, viewProj);
+    SetShaderValue(blobletShader, bloLoc_eyePos, &camera.position, SHADER_UNIFORM_VEC3);
+    SetShaderValue(blobletShader, bloLoc_baseColor, &blobletColor, SHADER_UNIFORM_VEC4);
+    SetShaderValue(blobletShader, bloLoc_ambientColor, &blobletAmbient, SHADER_UNIFORM_VEC4);
+    float alphaScale = 2.0f;
+    SetShaderValue(blobletShader, bloLoc_alphaScale, &alphaScale, SHADER_UNIFORM_FLOAT);
 
 #if defined(__EMSCRIPTEN__) || defined(PLATFORM_WEB)
     rlEnableVertexBuffer(blobletStaticVBO);
@@ -484,21 +489,21 @@ SetShaderValue(blobletShader, bloLoc_alphaScale, &alphaScale, SHADER_UNIFORM_FLO
     rlEnableVertexArray(blobletVAO);
 #endif
 
-for (int i = 0; i < numBloblets; i++)
-{
-    const Bloblet& bl = bloblets[i];
+    for (int i = 0; i < numBloblets; i++)
+    {
+        const Bloblet& bl = bloblets[i];
 
-    float perp = bl.radius / sqrtf(bl.wobble);
-    float parallelMinusPerp = bl.radius * bl.wobble - perp;
-    Vector3 scaleDirPMP = Vector3Scale(bl.direction, parallelMinusPerp);
+        float perp = bl.radius / sqrtf(bl.wobble);
+        float parallelMinusPerp = bl.radius * bl.wobble - perp;
+        Vector3 scaleDirPMP = Vector3Scale(bl.direction, parallelMinusPerp);
 
-    SetShaderValue(blobletShader, bloLoc_center, &bl.position, SHADER_UNIFORM_VEC3);
-    SetShaderValue(blobletShader, bloLoc_scaleDir, &bl.direction, SHADER_UNIFORM_VEC3);
-    SetShaderValue(blobletShader, bloLoc_scalePerp, &perp, SHADER_UNIFORM_FLOAT);
-    SetShaderValue(blobletShader, bloLoc_scaleDirPMP, &scaleDirPMP, SHADER_UNIFORM_VEC3);
+        SetShaderValue(blobletShader, bloLoc_center, &bl.position, SHADER_UNIFORM_VEC3);
+        SetShaderValue(blobletShader, bloLoc_scaleDir, &bl.direction, SHADER_UNIFORM_VEC3);
+        SetShaderValue(blobletShader, bloLoc_scalePerp, &perp, SHADER_UNIFORM_FLOAT);
+        SetShaderValue(blobletShader, bloLoc_scaleDirPMP, &scaleDirPMP, SHADER_UNIFORM_VEC3);
 
-    rlDrawVertexArrayElements(0, (int)blobletIndexCount, nullptr);
-}
+        rlDrawVertexArrayElements(0, (int)blobletIndexCount, nullptr);
+    }
 
 #if defined(__EMSCRIPTEN__) || defined(PLATFORM_WEB)
     rlDisableVertexBufferElement();
@@ -508,6 +513,6 @@ for (int i = 0; i < numBloblets; i++)
     rlDisableVertexArray();
 #endif
 
-EndShaderMode();
-EndBlendMode();
+    EndShaderMode();
+    EndBlendMode();
 }

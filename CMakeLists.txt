@@ -5,6 +5,8 @@ project(xbox_blob_raylib CXX)
 set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(WINDBG "Enable win32 output" OFF)
+
 if(WIN32)
     enable_language(RC)
 endif()
@@ -22,11 +24,17 @@ include("cmake/sound.cmake")
 add_subdirectory("thirdparty")
 add_subdirectory("src")
 
-add_executable(xbox_startup WIN32
-    src/util/noclip.cpp
-    src/main.rc
-    src/main.cpp
-)
+if(WINDBG)
+    add_executable(xbox_startup
+        src/main.rc
+        src/main.cpp
+    )
+else()
+    add_executable(xbox_startup WIN32
+        src/main.rc
+        src/main.cpp
+    )
+endif()
 
 if(WIN32)
     if(MSVC OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")

@@ -1,4 +1,4 @@
-#version 330
+R"GLSL(#version 330
 
 in float viewDist;
 
@@ -22,3 +22,4 @@ void main()
     
     finalColor = vec4(val, val, val, 1.0);
 }
+)GLSL"

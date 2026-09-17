@@ -13,7 +13,9 @@ out vec2 fragPlasmaUV[3];
 void main()
 {
     fragTexCoord0 = vertexTexCoord0;
+
     for (int i = 0; i < 3; i++)
         fragPlasmaUV[i] = vertexTexCoord1 * plasmaScale[i] + plasmaOffset[i];
-    gl_Position = vec4(vertexPosition, 1.0);
+
+    gl_Position = vec4(vertexPosition.xy, 0.0, 1.0);
 }

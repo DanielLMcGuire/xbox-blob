@@ -14,4 +14,4 @@ endif()
 
 add_library(app ${APP_SOURCES})
 
-target_link_libraries(app PRIVATE raylib rlimgui scene sos blob)
+target_link_libraries(app PRIVATE raylib rlimgui scene sos blob noclip)

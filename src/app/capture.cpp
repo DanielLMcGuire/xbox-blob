@@ -3,6 +3,9 @@
 #include "imgui.h"
 #include "rlImGui.h"
 
+#include <algorithm>
+#include <cmath>
+
 #if defined(_WIN32)
     #undef DrawText
 #endif
@@ -21,7 +24,10 @@ void XboxStartup::updateCapture()
     const bool isBlobStaticEnded = (currentElapsedTime >= BLOB_STATIC_END_TIME);
 
     Vector3 splinePos, splineLook;
-    camController.getPosition(currentElapsedTime, &splinePos, &splineLook, &renderSceneGeom, &renderSlash);
+    float fCamTime = (currentElapsedTime * currentElapsedTime / 6.0f) * 0.8f;
+    fCamTime += 0.2f * (currentElapsedTime * sinf(std::min(3.14159265354f / 2.0f, currentElapsedTime * 0.2833f)));
+
+    camController.getPosition(fCamTime, &splinePos, &splineLook, &renderSceneGeom, &renderSlash);
 
     camera.position = splinePos;
     camera.target = splineLook;
@@ -44,22 +50,27 @@ void XboxStartup::updateCapture()
     if (isBlobStaticEnded)
     {
         BeginMode3D(camera);
-        
-        blob->Render(camera, driver->GetPulseIntensity(), driver->GetIntensity(), driver->GetBaseIntensity(), currentElapsedTime);
+
+        float intensity = driver->GetIntensity();
 
         if (renderSceneGeom) 
         {
             sceneRenderer->render(camera, *blob, true);
-            //greenFog->render(camera, *blob, driver->GetIntensity(), currentElapsedTime);
+            greenFog->render(camera, *blob, *sceneRenderer, intensity, currentElapsedTime);
         }
+
+        blob->Render(camera, driver->GetPulseIntensity(), intensity, driver->GetBaseIntensity(), currentElapsedTime);
+
         if (renderSlash)
             logoRenderer->render(camController.getSlashTransform(), camera, currentElapsedTime);
         
         EndMode3D();
     }
+
 #if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB)
     if (wireframeMode) rlDisableWireMode();
 #endif
+
     EndDrawing();
 
     TakeScreenshot(TextFormat("frames/frame_%06d.tga", frameNumber++));

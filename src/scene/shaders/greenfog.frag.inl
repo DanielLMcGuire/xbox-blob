@@ -13,16 +13,21 @@ uniform vec3 glowColor;
 
 out vec4 finalColor;
 
+float samplePlasma(vec4 texColor)
+{
+    return (texColor.a < 1.0) ? texColor.a : texColor.r;
+}
+
 void main()
 {
-    float p0 = texture(plasmaMap0, fragPlasmaUV[0]).a;
-    float p1 = texture(plasmaMap1, fragPlasmaUV[1]).a;
-    float p2 = texture(plasmaMap2, fragPlasmaUV[2]).a;
+    float p0 = samplePlasma(texture(plasmaMap0, fragPlasmaUV[0]));
+    float p1 = samplePlasma(texture(plasmaMap1, fragPlasmaUV[1]));
+    float p2 = samplePlasma(texture(plasmaMap2, fragPlasmaUV[2]));
+    
     vec3 plasmaSum = vec3(p0 + p1 + p2) * intensityTint;
+    vec3 occ = useIntensityMap ? texture(intensityMap, fragTexCoord0).rgb : vec3(1.0);
+    vec3 color = (plasmaSum * occ) + glowColor;
 
-    vec3 occlusion = useIntensityMap ? texture(intensityMap, fragTexCoord0).rgb : vec3(1.0);
-
-    vec3 color = plasmaSum * occlusion + glowColor;
     finalColor = vec4(color, 1.0);
 }
 )GLSL"

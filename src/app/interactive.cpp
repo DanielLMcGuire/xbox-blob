@@ -5,6 +5,9 @@
 #include "../util/text_solvers.h"
 #include "rlgl.h"
 
+#include <algorithm>
+#include <cmath>
+
 #if defined(_WIN32)
     #undef DrawText
 #endif
@@ -65,7 +68,10 @@ void XboxStartup::updateInteractive()
     Vector3 splinePos, splineLook;
     if (!manualRender)
     {
-        camController.getPosition(currentElapsedTime, &splinePos, &splineLook, &renderSceneGeom, &renderSlash);
+        float fCamTime = (currentElapsedTime * currentElapsedTime / 6.0f) * 0.8f;
+        fCamTime += 0.2f * (currentElapsedTime * sinf(std::min(3.14159265354f / 2.0f, currentElapsedTime * 0.2833f)));
+
+        camController.getPosition(fCamTime, &splinePos, &splineLook, &renderSceneGeom, &renderSlash);
 
         if (!noclip->active) {
             camera.position = splinePos;
@@ -96,12 +102,16 @@ void XboxStartup::updateInteractive()
             Grid::Draw3D(10, 50, { 255, 255, 255, 255 });
 
         if (isBlobStaticEnded) {
-            blob->Render(camera, driver->GetPulseIntensity(), driver->GetIntensity(), driver->GetBaseIntensity(), currentElapsedTime);
+            float intensity = driver->GetIntensity();
+            
             if (renderSceneGeom) 
             {
                 sceneRenderer->render(camera, *blob, true);
-                //greenFog->render(camera, *blob, driver->GetIntensity(), currentElapsedTime);
+                greenFog->render(camera, *blob, *sceneRenderer, intensity, currentElapsedTime);
             }
+            
+            blob->Render(camera, driver->GetPulseIntensity(), intensity, driver->GetBaseIntensity(), currentElapsedTime);
+
             if (renderSlash)
                 logoRenderer->render(camController.getSlashTransform(), camera, currentElapsedTime);
         }
