@@ -99,7 +99,7 @@ void XboxStartup::updateInteractive()
         BeginMode3D(camera);
         
         if (gridEnabled)
-            Grid::Draw3D(10, 50, { 255, 255, 255, 255 });
+            Grid::Draw3D(10, 50, { 205, 255, 205, 255 });
 
         if (isBlobStaticEnded) {
             float intensity = driver->GetIntensity();
