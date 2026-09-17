@@ -50,20 +50,19 @@ void XboxStartup::updateCapture()
     if (isBlobStaticEnded)
     {
         BeginMode3D(camera);
-
         float intensity = driver->GetIntensity();
 
-        if (renderSceneGeom) 
-        {
+        if (renderSceneGeom)
             sceneRenderer->render(camera, *blob, true);
-            greenFog->render(camera, *blob, *sceneRenderer, intensity, currentElapsedTime);
-        }
-
+        
         blob->Render(camera, driver->GetPulseIntensity(), intensity, driver->GetBaseIntensity(), currentElapsedTime);
-
+        
+        if (renderSceneGeom) 
+            greenFog->render(camera, *blob, *sceneRenderer, intensity, currentElapsedTime);
+        
         if (renderSlash)
             logoRenderer->render(camController.getSlashTransform(), camera, currentElapsedTime);
-        
+            
         EndMode3D();
     }
 

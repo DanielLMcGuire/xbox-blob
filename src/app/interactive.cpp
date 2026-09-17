@@ -103,14 +103,16 @@ void XboxStartup::updateInteractive()
 
         if (isBlobStaticEnded) {
             float intensity = driver->GetIntensity();
+            float pulseIntensity = driver->GetPulseIntensity();
+            float baseIntensity = driver->GetBaseIntensity();
             
             if (renderSceneGeom) 
-            {
                 sceneRenderer->render(camera, *blob, true);
-                greenFog->render(camera, *blob, *sceneRenderer, intensity, currentElapsedTime);
-            }
+
+            blob->Render(camera, pulseIntensity, intensity, baseIntensity, currentElapsedTime);
             
-            blob->Render(camera, driver->GetPulseIntensity(), intensity, driver->GetBaseIntensity(), currentElapsedTime);
+            if (renderSceneGeom) 
+                greenFog->render(camera, *blob, *sceneRenderer, intensity, currentElapsedTime);
 
             if (renderSlash)
                 logoRenderer->render(camController.getSlashTransform(), camera, currentElapsedTime);
