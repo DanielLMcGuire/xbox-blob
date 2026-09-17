@@ -371,7 +371,8 @@ void GreenFog::renderIntensityTexture(const Camera3D &camera, const Blob &blob, 
     SetShaderValue(occlusionShader, occLoc_isBackdrop, &isBackdrop, SHADER_UNIFORM_INT);
     rlEnableDepthTest();
     rlEnableDepthMask();
-    sceneRenderer.renderAllSilhouettes(camera, occLoc_mvp, occLoc_model, occlusionShader);
+    //sceneRenderer.renderAllSilhouettes(camera, occLoc_mvp, occLoc_model, occlusionShader);
+    // @todo implement real fix later, this looks good enough for now
 
     EndShaderMode();
 
