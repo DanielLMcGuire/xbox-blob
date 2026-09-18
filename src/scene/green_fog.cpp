@@ -46,16 +46,19 @@ void GreenFog::create(int seed)
     verts[1].pos = {-1.0f, +1.0f, 0.0f};
     verts[2].pos = {+1.0f, +1.0f, 0.0f};
     verts[3].pos = {+1.0f, -1.0f, 0.0f};
+
     verts[0].u0 = 0.0f; verts[0].v0 = 0.0f;
     verts[1].u0 = 0.0f; verts[1].v0 = 1.0f;
     verts[2].u0 = 1.0f; verts[2].v0 = 1.0f;
     verts[3].u0 = 1.0f; verts[3].v0 = 0.0f;
+
     for (auto &v : verts)
     {
         v.v1 = -v.pos.x * 640.0f / (float)PLASMA_SIZE;
         v.u1 =  v.pos.y * 480.0f / (float)PLASMA_SIZE;
     }
     static const uint16_t quadIndices[6] = {0, 1, 2, 0, 2, 3};
+
     quadVAO = rlLoadVertexArray();
     rlEnableVertexArray(quadVAO);
     quadVBO = rlLoadVertexBuffer(verts, sizeof(verts), false);
@@ -65,7 +68,7 @@ void GreenFog::create(int seed)
     rlEnableVertexAttribute(1);
     rlSetVertexAttribute(2, 2, RL_FLOAT, false, sizeof(QuadVertex), offsetof(QuadVertex, u1));
     rlEnableVertexAttribute(2);
-    quadEBO = rlLoadVertexBufferElement(quadIndices, sizeof(quadIndices), false);
+    rlLoadVertexBufferElement(quadIndices, sizeof(quadIndices), false);
     rlDisableVertexArray();
 
     GlowVertex gverts[4] = {
@@ -81,7 +84,7 @@ void GreenFog::create(int seed)
     rlEnableVertexAttribute(0);
     rlSetVertexAttribute(1, 2, RL_FLOAT, false, sizeof(GlowVertex), offsetof(GlowVertex, u));
     rlEnableVertexAttribute(1);
-    glowEBO = rlLoadVertexBufferElement(quadIndices, sizeof(quadIndices), false);
+    rlLoadVertexBufferElement(quadIndices, sizeof(quadIndices), false);
     rlDisableVertexArray();
 
     GlowVertex iverts[4] = {
@@ -97,21 +100,22 @@ void GreenFog::create(int seed)
     rlEnableVertexAttribute(0);
     rlSetVertexAttribute(1, 2, RL_FLOAT, false, sizeof(GlowVertex), offsetof(GlowVertex, u));
     rlEnableVertexAttribute(1);
-    intensityQuadEBO = rlLoadVertexBufferElement(quadIndices, sizeof(quadIndices), false);
+    rlLoadVertexBufferElement(quadIndices, sizeof(quadIndices), false);
     rlDisableVertexArray();
 
 #ifdef HAS_EMBED
     #if HAS_EMBED == 2
-        #ifdef __EMSCRIPTEN__
-            #if !__has_embed("shaders/greenfog-web.vert") || !__has_embed("shaders/greenfog-web.frag") || \
-                 !__has_embed("shaders/glow-web.vert")     || !__has_embed("shaders/glow-web.frag")
-                #error FAILED TO FIND WEB SHADERS!
-            #endif
-        #else
-            #if !__has_embed("shaders/greenfog.vert") || !__has_embed("shaders/greenfog.frag") || \
-                 !__has_embed("shaders/glow.vert")     || !__has_embed("shaders/glow.frag")
-                #error FAILED TO FIND DESKTOP SHADERS!
-            #endif
+        #if !__has_embed("shaders/greenfog.vert")
+            #error FAILED TO FIND greenfog.vert!
+        #endif
+        #if !__has_embed("shaders/greenfog.frag")
+            #error FAILED TO FIND greenfog.frag!
+        #endif
+        #if !__has_embed("shaders/glow.vert")
+            #error FAILED TO FIND glow.vert!
+        #endif
+        #if !__has_embed("shaders/glow.frag")
+            #error FAILED TO FIND glow.frag!
         #endif
     #endif
     #ifdef __clang__
@@ -119,32 +123,16 @@ void GreenFog::create(int seed)
     #pragma clang diagnostic ignored "-Wc23-extensions"
     #endif
     static constexpr char fogVertData[] = { 
-        #ifdef __EMSCRIPTEN__
-            #embed "shaders/greenfog-web.vert"
-        #else
-            #embed "shaders/greenfog.vert"
-        #endif
+        #embed "shaders/greenfog.vert" 
         , '\0' };
     static constexpr char fogFragData[] = { 
-        #ifdef __EMSCRIPTEN__
-            #embed "shaders/greenfog-web.frag"
-        #else
-            #embed "shaders/greenfog.frag"
-        #endif
+        #embed "shaders/greenfog.frag" 
         , '\0' };
     static constexpr char glowVertData[] = { 
-        #ifdef __EMSCRIPTEN__
-            #embed "shaders/glow-web.vert"
-        #else
-            #embed "shaders/glow.vert"
-        #endif
+        #embed "shaders/glow.vert" 
         , '\0' };
     static constexpr char glowFragData[] = { 
-        #ifdef __EMSCRIPTEN__
-            #embed "shaders/glow-web.frag"
-        #else
-            #embed "shaders/glow.frag"
-        #endif
+        #embed "shaders/glow.frag" 
         , '\0' };
     #ifdef __clang__
     #pragma clang diagnostic pop
@@ -153,43 +141,24 @@ void GreenFog::create(int seed)
     glowShader = LoadShaderFromMemory(glowVertData, glowFragData);
 #else
     fogShader = LoadShaderFromMemory(
-#ifdef __EMSCRIPTEN__
-#include "shaders/greenfog-web.vert.inl"
-#else
 #include "shaders/greenfog.vert.inl"
-#endif
     ,
-#ifdef __EMSCRIPTEN__
-#include "shaders/greenfog-web.frag.inl"
-#else
 #include "shaders/greenfog.frag.inl"
-#endif
     );
     glowShader = LoadShaderFromMemory(
-#ifdef __EMSCRIPTEN__
-#include "shaders/glow-web.vert.inl"
-#else
 #include "shaders/glow.vert.inl"
-#endif
     ,
-#ifdef __EMSCRIPTEN__
-#include "shaders/glow-web.frag.inl"
-#else
 #include "shaders/glow.frag.inl"
-#endif
     );
 #endif
 
 #ifdef HAS_EMBED
     #if HAS_EMBED == 2
-        #ifdef __EMSCRIPTEN__
-            #if !__has_embed("shaders/occlusion-web.vert") || !__has_embed("shaders/occlusion-web.frag")
-                #error FAILED TO FIND WEB SHADERS!
-            #endif
-        #else
-            #if !__has_embed("shaders/occlusion.vert") || !__has_embed("shaders/occlusion.frag")
-                #error FAILED TO FIND DESKTOP SHADERS!
-            #endif
+        #if !__has_embed("shaders/occlusion.vert")
+            #error FAILED TO FIND occlusion.vert!
+        #endif
+        #if !__has_embed("shaders/occlusion.frag")
+            #error FAILED TO FIND occlusion.frag!
         #endif
     #endif
     #ifdef __clang__
@@ -197,18 +166,10 @@ void GreenFog::create(int seed)
     #pragma clang diagnostic ignored "-Wc23-extensions"
     #endif
     static constexpr char occVertData[] = { 
-        #ifdef __EMSCRIPTEN__
-            #embed "shaders/occlusion-web.vert"
-        #else
-            #embed "shaders/occlusion.vert"
-        #endif
+        #embed "shaders/occlusion.vert" 
         , '\0' };
     static constexpr char occFragData[] = { 
-        #ifdef __EMSCRIPTEN__
-            #embed "shaders/occlusion-web.frag"
-        #else
-            #embed "shaders/occlusion.frag"
-        #endif
+        #embed "shaders/occlusion.frag" 
         , '\0' };
     #ifdef __clang__
     #pragma clang diagnostic pop
@@ -216,17 +177,9 @@ void GreenFog::create(int seed)
     occlusionShader = LoadShaderFromMemory(occVertData, occFragData);
 #else
     occlusionShader = LoadShaderFromMemory(
-#ifdef __EMSCRIPTEN__
-#include "shaders/occlusion-web.vert.inl"
-#else
 #include "shaders/occlusion.vert.inl"
-#endif
     ,
-#ifdef __EMSCRIPTEN__
-#include "shaders/occlusion-web.frag.inl"
-#else
 #include "shaders/occlusion.frag.inl"
-#endif
     );
 #endif
 
@@ -328,7 +281,7 @@ void GreenFog::renderIntensityTexture(const Camera3D &camera, const Blob &blob, 
 
     rlEnableFramebuffer(intensityFBO);
     rlViewport(0, 0, INTENSITY_TEX_W, INTENSITY_TEX_H);
-
+    
     rlClearColor(255, 0, 0, 255); 
     rlClearScreenBuffers();
 
@@ -344,36 +297,16 @@ void GreenFog::renderIntensityTexture(const Camera3D &camera, const Blob &blob, 
     SetShaderValue(occlusionShader, occLoc_isBackdrop, &isBackdrop, SHADER_UNIFORM_INT);
     rlDisableDepthTest();
     rlDisableDepthMask();
-
-#if defined(__EMSCRIPTEN__) || defined(PLATFORM_WEB)
-    rlEnableVertexBuffer(intensityQuadVBO);
-    rlSetVertexAttribute(0, 3, RL_FLOAT, false, sizeof(GlowVertex), offsetof(GlowVertex, pos));
-    rlEnableVertexAttribute(0);
-    rlSetVertexAttribute(1, 2, RL_FLOAT, false, sizeof(GlowVertex), offsetof(GlowVertex, u));
-    rlEnableVertexAttribute(1);
-    rlEnableVertexBufferElement(intensityQuadEBO);
-#else
     rlEnableVertexArray(intensityQuadVAO);
-#endif
-
     rlDrawVertexArrayElements(0, 6, nullptr);
-
-#if defined(__EMSCRIPTEN__) || defined(PLATFORM_WEB)
-    rlDisableVertexBufferElement();
-    rlDisableVertexAttribute(0);
-    rlDisableVertexAttribute(1);
-    rlDisableVertexBuffer();
-#else
     rlDisableVertexArray();
-#endif
 
     isBackdrop = 0;
     SetShaderValue(occlusionShader, occLoc_isBackdrop, &isBackdrop, SHADER_UNIFORM_INT);
     rlEnableDepthTest();
     rlEnableDepthMask();
     //sceneRenderer.renderAllSilhouettes(camera, occLoc_mvp, occLoc_model, occlusionShader);
-    // @todo implement real fix later, this looks good enough for now
-
+    
     EndShaderMode();
 
     rlDisableFramebuffer();
@@ -421,7 +354,7 @@ void GreenFog::render(const Camera3D &camera, const Blob &blob, IntroSceneRender
         float rad = 0.6f * (((float)(3 - i - 1)) / 3.0f - 0.2f);
         float x_mul = 0.5f * camRad * MUL_SCALE;
         float y_mul = 1.0f * camAspect * camRad * MUL_SCALE;
-
+        
         float x_add =  rad * camTheta - originScr.x * x_mul * 640.0f / (float)PLASMA_SIZE;
         float y_add = -rad * camPhi   + originScr.y * y_mul * 480.0f / (float)PLASMA_SIZE;
         
@@ -455,30 +388,10 @@ void GreenFog::render(const Camera3D &camera, const Blob &blob, IntroSceneRender
         SetShaderValue(fogShader, loc_plasmaMap[i], &unit, SHADER_UNIFORM_INT);
     }
 
-#if defined(__EMSCRIPTEN__) || defined(PLATFORM_WEB)
-    rlEnableVertexBuffer(quadVBO);
-    rlSetVertexAttribute(0, 3, RL_FLOAT, false, sizeof(QuadVertex), offsetof(QuadVertex, pos));
-    rlEnableVertexAttribute(0);
-    rlSetVertexAttribute(1, 2, RL_FLOAT, false, sizeof(QuadVertex), offsetof(QuadVertex, u0));
-    rlEnableVertexAttribute(1);
-    rlSetVertexAttribute(2, 2, RL_FLOAT, false, sizeof(QuadVertex), offsetof(QuadVertex, u1));
-    rlEnableVertexAttribute(2);
-    rlEnableVertexBufferElement(quadEBO);
-#else
     rlEnableVertexArray(quadVAO);
-#endif
-
     rlDrawVertexArrayElements(0, 6, nullptr);
-
-#if defined(__EMSCRIPTEN__) || defined(PLATFORM_WEB)
-    rlDisableVertexBufferElement();
-    rlDisableVertexAttribute(0);
-    rlDisableVertexAttribute(1);
-    rlDisableVertexAttribute(2);
-    rlDisableVertexBuffer();
-#else
     rlDisableVertexArray();
-#endif
+    EndShaderMode();
 
     for (int i = 3; i >= 0; i--)
     {
@@ -514,7 +427,7 @@ void GreenFog::render(const Camera3D &camera, const Blob &blob, IntroSceneRender
         Vector4 tint = {0xA0 / 255.f, 0xFF / 255.f, 0x60 / 255.f, alpha / 255.f};
         BeginShaderMode(glowShader);
         SetShaderValueMatrix(glowShader, glowLoc_mvp, mvp);
-
+        
         rlActiveTextureSlot(0);
         rlEnableTexture(blob.GetGlowTexture().id);
         rlTextureParameters(blob.GetGlowTexture().id, RL_TEXTURE_MAG_FILTER, RL_TEXTURE_FILTER_LINEAR);
@@ -523,33 +436,15 @@ void GreenFog::render(const Camera3D &camera, const Blob &blob, IntroSceneRender
         SetShaderValue(glowShader, glowLoc_tex0, &gUnit, SHADER_UNIFORM_INT);
 
         SetShaderValue(glowShader, glowLoc_tint, &tint, SHADER_UNIFORM_VEC4);
-
-#if defined(__EMSCRIPTEN__) || defined(PLATFORM_WEB)
-        rlEnableVertexBuffer(glowVBO);
-        rlSetVertexAttribute(0, 3, RL_FLOAT, false, sizeof(GlowVertex), offsetof(GlowVertex, pos));
-        rlEnableVertexAttribute(0);
-        rlSetVertexAttribute(1, 2, RL_FLOAT, false, sizeof(GlowVertex), offsetof(GlowVertex, u));
-        rlEnableVertexAttribute(1);
-        rlEnableVertexBufferElement(glowEBO);
-#else
         rlEnableVertexArray(glowVAO);
-#endif
-
         rlDrawVertexArrayElements(0, 6, nullptr);
-
-#if defined(__EMSCRIPTEN__) || defined(PLATFORM_WEB)
-        rlDisableVertexBufferElement();
-        rlDisableVertexAttribute(0);
-        rlDisableVertexAttribute(1);
-        rlDisableVertexBuffer();
-#else
         rlDisableVertexArray();
-#endif
-
         EndShaderMode();
+
         rlActiveTextureSlot(0);
         rlDisableTexture();
     }
+
     EndBlendMode();
     rlEnableDepthMask();
     rlEnableDepthTest();

@@ -39,27 +39,9 @@ void LogoRenderer::uploadTextMesh(GPUMesh &gm, const TextMesh &mesh)
 
 void LogoRenderer::drawMeshRaw(const GPUMesh &gm)
 {
-#if defined(__EMSCRIPTEN__) || defined(PLATFORM_WEB)
-    rlEnableVertexBuffer(gm.vbo);
-    rlSetVertexAttribute(0, 3, RL_FLOAT, false, sizeof(LogoVertex), offsetof(LogoVertex, pos));
-    rlEnableVertexAttribute(0);
-    rlSetVertexAttribute(1, 2, RL_FLOAT, false, sizeof(LogoVertex), offsetof(LogoVertex, u));
-    rlEnableVertexAttribute(1);
-    rlEnableVertexBufferElement(gm.ebo);
-#else
     rlEnableVertexArray(gm.vao);
-#endif
-
     rlDrawVertexArrayElements(0, gm.indexCount, nullptr);
-
-#if defined(__EMSCRIPTEN__) || defined(PLATFORM_WEB)
-    rlDisableVertexBufferElement();
-    rlDisableVertexAttribute(0);
-    rlDisableVertexAttribute(1);
-    rlDisableVertexBuffer();
-#else
     rlDisableVertexArray();
-#endif
 }
 
 void LogoRenderer::create()
@@ -134,20 +116,23 @@ void LogoRenderer::create()
 
 #ifdef HAS_EMBED
     #if HAS_EMBED == 2
-        #ifdef __EMSCRIPTEN__
-            #if !__has_embed("shaders/logo_unlit-web.vert")    || !__has_embed("shaders/logo_unlit-web.frag")    || \
-                 !__has_embed("shaders/logo_interior-web.frag") || \
-                 !__has_embed("shaders/logo_tm-web.frag")       || \
-                 !__has_embed("shaders/logo_text-web.vert")     || !__has_embed("shaders/logo_text-web.frag")
-                #error FAILED TO FIND WEB SHADERS!
-            #endif
-        #else
-            #if !__has_embed("shaders/logo_unlit.vert")    || !__has_embed("shaders/logo_unlit.frag")    || \
-                 !__has_embed("shaders/logo_interior.frag") || \
-                 !__has_embed("shaders/logo_tm.frag")       || \
-                 !__has_embed("shaders/logo_text.vert")     || !__has_embed("shaders/logo_text.frag")
-                #error FAILED TO FIND DESKTOP SHADERS!
-            #endif
+        #if !__has_embed("shaders/logo_unlit.vert")
+            #error FAILED TO FIND logo_unlit.vert!
+        #endif
+        #if !__has_embed("shaders/logo_unlit.frag")
+            #error FAILED TO FIND logo_unlit.frag!
+        #endif
+        #if !__has_embed("shaders/logo_interior.frag")
+            #error FAILED TO FIND logo_interior.frag!
+        #endif
+        #if !__has_embed("shaders/logo_tm.frag")
+            #error FAILED TO FIND logo_tm.frag!
+        #endif
+        #if !__has_embed("shaders/logo_text.vert")
+            #error FAILED TO FIND logo_text.vert!
+        #endif
+        #if !__has_embed("shaders/logo_text.frag")
+            #error FAILED TO FIND logo_text.frag!
         #endif
     #endif
     #ifdef __clang__
@@ -155,48 +140,24 @@ void LogoRenderer::create()
     #pragma clang diagnostic ignored "-Wc23-extensions"
     #endif
     static constexpr char unlitVertData[]    = { 
-        #ifdef __EMSCRIPTEN__
-            #embed "shaders/logo_unlit-web.vert"
-        #else
-            #embed "shaders/logo_unlit.vert"
-        #endif
+        #embed "shaders/logo_unlit.vert"
         , '\0' };
     static constexpr char unlitFragData[]    = { 
-        #ifdef __EMSCRIPTEN__
-            #embed "shaders/logo_unlit-web.frag"
-        #else
-            #embed "shaders/logo_unlit.frag"
-        #endif
+        #embed "shaders/logo_unlit.frag"
         , '\0' };
     static constexpr char interiorFragData[] = { 
-        #ifdef __EMSCRIPTEN__
-            #embed "shaders/logo_interior-web.frag"
-        #else
-            #embed "shaders/logo_interior.frag"
-        #endif
+        #embed "shaders/logo_interior.frag"
         , '\0' };
     static constexpr char tmFragData[] = { 
-        #ifdef __EMSCRIPTEN__
-            #embed "shaders/logo_tm-web.frag"
-        #else
-            #embed "shaders/logo_tm.frag" 
-        #endif
+        #embed "shaders/logo_tm.frag" 
         , '\0' 
     };
     static constexpr char textVertData[] = { 
-        #ifdef __EMSCRIPTEN__
-            #embed "shaders/logo_text-web.vert"
-        #else
-            #embed "shaders/logo_text.vert" 
-        #endif
+        #embed "shaders/logo_text.vert" 
         , '\0' 
     };
     static constexpr char textFragData[] = { 
-        #ifdef __EMSCRIPTEN__
-            #embed "shaders/logo_text-web.frag"
-        #else
-            #embed "shaders/logo_text.frag"
-        #endif
+        #embed "shaders/logo_text.frag"
         , '\0' };
     #ifdef __clang__
     #pragma clang diagnostic pop
@@ -207,56 +168,24 @@ void LogoRenderer::create()
     textShader = LoadShaderFromMemory(textVertData, textFragData);
 #else
     unlitShader = LoadShaderFromMemory(
-#ifdef __EMSCRIPTEN__
-#include "shaders/logo_unlit-web.vert.inl"
-#else
 #include "shaders/logo_unlit.vert.inl"
-#endif
     ,
-#ifdef __EMSCRIPTEN__
-#include "shaders/logo_unlit-web.frag.inl"
-#else
 #include "shaders/logo_unlit.frag.inl"
-#endif
     );
     interiorShader = LoadShaderFromMemory(
-#ifdef __EMSCRIPTEN__
-#include "shaders/logo_unlit-web.vert.inl"
-#else
 #include "shaders/logo_unlit.vert.inl"
-#endif
     ,
-#ifdef __EMSCRIPTEN__
-#include "shaders/logo_interior-web.frag.inl"
-#else
 #include "shaders/logo_interior.frag.inl"
-#endif
     );
     tmShader = LoadShaderFromMemory(
-#ifdef __EMSCRIPTEN__
-#include "shaders/logo_unlit-web.vert.inl"
-#else
 #include "shaders/logo_unlit.vert.inl"
-#endif
     ,
-#ifdef __EMSCRIPTEN__
-#include "shaders/logo_tm-web.frag.inl"
-#else
 #include "shaders/logo_tm.frag.inl"
-#endif
     );
     textShader = LoadShaderFromMemory(
-#ifdef __EMSCRIPTEN__
-#include "shaders/logo_text-web.vert.inl"
-#else
 #include "shaders/logo_text.vert.inl"
-#endif
     ,
-#ifdef __EMSCRIPTEN__
-#include "shaders/logo_text-web.frag.inl"
-#else
 #include "shaders/logo_text.frag.inl"
-#endif
     );
 #endif
 

@@ -43,36 +43,9 @@ void IntroSceneRenderer::uploadMesh(GPUMesh &gm, const SceneMesh &mesh)
 
 void IntroSceneRenderer::drawMeshRaw(const GPUMesh &gm)
 {
-#if defined(__EMSCRIPTEN__) || defined(PLATFORM_WEB)
-    rlEnableVertexBuffer(gm.vbo);
-    rlSetVertexAttribute(0, 3, RL_FLOAT, false, sizeof(SceneVertex), offsetof(SceneVertex, pos));
-    rlEnableVertexAttribute(0);
-    rlSetVertexAttribute(1, 3, RL_FLOAT, false, sizeof(SceneVertex), offsetof(SceneVertex, tangent));
-    rlEnableVertexAttribute(1);
-    rlSetVertexAttribute(2, 3, RL_FLOAT, false, sizeof(SceneVertex), offsetof(SceneVertex, bitangent));
-    rlEnableVertexAttribute(2);
-    rlSetVertexAttribute(3, 3, RL_FLOAT, false, sizeof(SceneVertex), offsetof(SceneVertex, normal));
-    rlEnableVertexAttribute(3);
-    rlSetVertexAttribute(4, 2, RL_FLOAT, false, sizeof(SceneVertex), offsetof(SceneVertex, u));
-    rlEnableVertexAttribute(4);
-    rlEnableVertexBufferElement(gm.ebo);
-#else
     rlEnableVertexArray(gm.vao);
-#endif
-
     rlDrawVertexArrayElements(0, gm.indexCount, nullptr);
-
-#if defined(__EMSCRIPTEN__) || defined(PLATFORM_WEB)
-    rlDisableVertexBufferElement();
-    rlDisableVertexAttribute(0);
-    rlDisableVertexAttribute(1);
-    rlDisableVertexAttribute(2);
-    rlDisableVertexAttribute(3);
-    rlDisableVertexAttribute(4);
-    rlDisableVertexBuffer();
-#else
     rlDisableVertexArray();
-#endif
 }
 
 void IntroSceneRenderer::create()
