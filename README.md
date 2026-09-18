@@ -74,9 +74,7 @@ Manual render mode does the following:
 
 ### Known issues
 
-1. Fog renders behind far parts of scene primitives unlike original:
-
-    ![Figure 1, showing parts of the scenes primitives not masked by fog](assets/README.md_Known_issues_fig1.png)
+1. Fog is not rendered correctly, workarounds are made
 
 1. Primitive bumpmaps and textures aren't exact yet (I have not finished them.)
 
