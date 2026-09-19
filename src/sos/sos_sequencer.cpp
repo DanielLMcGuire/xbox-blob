@@ -485,11 +485,170 @@ void Sequencer::startBootSound()
         voices[i].active = false;
     }
     tickCountdown = 0.0f;
+    pauseFade = paused.load(std::memory_order_relaxed) ? 0 : pauseFadeFrames();
+    leadInFrames = 0;
+    seekPending.store(false, std::memory_order_relaxed);
 }
 
-void Sequencer::render(float* output, int frameCount) 
+int Sequencer::pauseFadeFrames() const
+{
+    return std::max(1, static_cast<int>(std::lround(sampleRate * PAUSE_FADE_SECONDS)));
+}
+
+int Sequencer::patchIndexOf(const Patch* p) const
+{
+    if (!p) return -1;
+    const std::ptrdiff_t i = p - patches;
+    return (i >= 0 && i < static_cast<std::ptrdiff_t>(sizeof(patches) / sizeof(patches[0]))) ? static_cast<int>(i) : -1;
+}
+
+Sequencer::Snapshot Sequencer::capture() const
+{
+    Snapshot s;
+    for (int i = 0; i < MAX_TRACKS; i++) { s.voices[i] = voices[i]; s.tracks[i] = tracks[i]; }
+    s.tickCountdown = tickCountdown;
+    return s;
+}
+
+void Sequencer::restore(const Snapshot& s)
+{
+    for (int i = 0; i < MAX_TRACKS; i++) { voices[i] = s.voices[i]; tracks[i] = s.tracks[i]; }
+    tickCountdown = s.tickCountdown;
+}
+
+void Sequencer::fastForward(int64_t target)
+{
+    const int64_t interval = std::max<int64_t>(1, std::llround(sampleRate * SEEK_CHECKPOINT_SECONDS));
+
+    const size_t idx = static_cast<size_t>(std::min<int64_t>(target / interval, static_cast<int64_t>(checkpoints.size()) - 1));
+    restore(checkpoints[idx]);
+    int64_t pos = static_cast<int64_t>(idx) * interval;
+
+    while (pos < target)
+    {
+        const int64_t boundary = (pos / interval + 1) * interval;
+        const int64_t next     = std::min(target, boundary);
+
+        for (int64_t left = next - pos; left > 0; )
+        {
+            const int n = static_cast<int>(std::min<int64_t>(left, SEEK_BLOCK_FRAMES));
+            renderActive(discardBuf.data(), n);
+            left -= n;
+        }
+        pos = next;
+
+        if (pos == boundary && static_cast<size_t>(pos / interval) == checkpoints.size())
+            checkpoints.push_back(capture());
+    }
+}
+
+void Sequencer::seek(double seconds)
+{
+    if (!std::isfinite(seconds)) return;
+    seconds = std::clamp(seconds, -SEEK_MAX_SECONDS, SEEK_MAX_SECONDS);
+
+    if (!seekScratch || seekScratchRate != sampleRate)
+    {
+        seekScratch = std::make_unique<Sequencer>();
+        Sequencer& fresh = *seekScratch;
+        fresh.setSampleRate(sampleRate);
+        fresh.startBootSound();
+        fresh.checkpoints.assign(1, fresh.capture());
+        fresh.discardBuf.assign(static_cast<size_t>(SEEK_BLOCK_FRAMES) * 2, 0.0f);
+        seekScratchRate = sampleRate;
+    }
+
+    Sequencer& sc = *seekScratch;
+    sc.fastForward(seconds > 0.0 ? std::llround(seconds * sampleRate) : 0);
+
+    std::lock_guard<std::mutex> lock(seekMutex);
+    if (!pendingSeek) pendingSeek = std::make_unique<SeekState>();
+    static_cast<Snapshot&>(*pendingSeek) = sc.capture();
+    for (int i = 0; i < MAX_TRACKS; i++)
+        pendingSeek->patchIdx[i] = sc.patchIndexOf(sc.voices[i].patch);
+    pendingSeek->leadInFrames = seconds < 0.0 ? std::llround(-seconds * sampleRate) : 0;
+    seekPending.store(true, std::memory_order_release);
+}
+
+void Sequencer::seekImmediate(double seconds)
+{
+    seek(seconds);
+    tryInstallSeek();
+}
+
+bool Sequencer::tryInstallSeek()
+{
+    if (!seekPending.load(std::memory_order_acquire)) return false;
+
+    std::unique_lock<std::mutex> lock(seekMutex, std::try_to_lock);
+    if (!lock.owns_lock() || !pendingSeek) return false;
+
+    const SeekState& s = *pendingSeek;
+    for (int i = 0; i < MAX_TRACKS; i++)
+    {
+        voices[i] = s.voices[i];
+        voices[i].patch = s.patchIdx[i] >= 0 ? &patches[s.patchIdx[i]] : nullptr;
+        tracks[i] = s.tracks[i];
+    }
+    tickCountdown = s.tickCountdown;
+    leadInFrames  = s.leadInFrames;
+    pauseFade     = 0;
+    seekPending.store(false, std::memory_order_release);
+    return true;
+}
+
+void Sequencer::render(float* output, int frameCount)
+{
+    if (frameCount <= 0) return;
+
+    if (seekPending.load(std::memory_order_acquire) && pauseFade <= 0)
+        tryInstallSeek();
+
+    const bool run        = !paused.load(std::memory_order_relaxed) &&
+                            !seekPending.load(std::memory_order_acquire);
+    const int  fadeFrames = pauseFadeFrames();
+
+    if (!run && pauseFade <= 0)
+    {
+        std::fill_n(output, static_cast<size_t>(frameCount) * 2, 0.0f);
+        return;
+    }
+
+    const int activeFrames = run ? frameCount : std::min(frameCount, pauseFade);
+
+    renderActive(output, activeFrames);
+
+    if (!(run && pauseFade >= fadeFrames))
+    {
+        for (int f = 0; f < activeFrames; f++)
+        {
+            if (run) pauseFade = std::min(pauseFade + 1, fadeFrames);
+            else     pauseFade = std::max(pauseFade - 1, 0);
+
+            const float gain = static_cast<float>(pauseFade) / static_cast<float>(fadeFrames);
+            output[f * 2]     *= gain;
+            output[f * 2 + 1] *= gain;
+        }
+    }
+
+    if (activeFrames < frameCount)
+        std::fill(output + static_cast<size_t>(activeFrames) * 2,
+                  output + static_cast<size_t>(frameCount) * 2, 0.0f);
+}
+
+void Sequencer::renderActive(float* output, int frameCount)
 {
     constexpr int SOLO_TRACK = -1;
+
+    if (leadInFrames > 0)
+    {
+        const int silent = static_cast<int>(std::min<int64_t>(leadInFrames, frameCount));
+        std::fill_n(output, static_cast<size_t>(silent) * 2, 0.0f);
+        leadInFrames -= silent;
+        output += static_cast<size_t>(silent) * 2;
+        frameCount -= silent;
+        if (frameCount <= 0) return;
+    }
 
     monoMixL.assign(frameCount, 0.0f);
     monoMixR.assign(frameCount, 0.0f);

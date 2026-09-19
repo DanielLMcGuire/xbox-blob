@@ -20,6 +20,12 @@ bool Audio::init()
     sequencer.setSampleRate(static_cast<float>(stream.sampleRate));
     sequencer.startBootSound();
 
+    if (hasDeferredSeek)
+    {
+        sequencer.seekImmediate(deferredSeek);
+        hasDeferredSeek = false;
+    }
+
     s_activeInstance = this;
     SetAudioStreamCallback(stream, dataCallback);
 
@@ -35,6 +41,17 @@ void Audio::restart()
     StopAudioStream(stream);
     sequencer.startBootSound();
     PlayAudioStream(stream);
+}
+
+void Audio::seek(double seconds)
+{
+    if (!initialized)
+    {
+        hasDeferredSeek = seconds > 0.0;
+        deferredSeek = seconds;
+        return;
+    }
+    sequencer.seek(seconds);
 }
 
 void Audio::deinit()

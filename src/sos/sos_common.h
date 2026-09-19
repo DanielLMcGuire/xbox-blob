@@ -11,6 +11,10 @@ constexpr int    SAMPLES_PER_TICK = 240;
 constexpr int    MAX_TRACKS       = 12;
 constexpr size_t MAX_LOOP_DEPTH   = 8;
 constexpr int    CONTROL_INTERVAL = 16;
+constexpr float  PAUSE_FADE_SECONDS = 0.02f;
+constexpr float  SEEK_CHECKPOINT_SECONDS = 0.5f;
+constexpr int    SEEK_BLOCK_FRAMES = 4800;
+constexpr double SEEK_MAX_SECONDS = 30.0;
 
 enum OpCode
 {
