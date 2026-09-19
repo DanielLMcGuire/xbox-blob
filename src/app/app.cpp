@@ -151,7 +151,7 @@ XboxStartup::~XboxStartup()
             std::fputs("Failed to export WAV\n", stderr);
         }
     }
-    if (audio)
+    if (blob)
         delete blob;
     if (driver)
         delete driver;
