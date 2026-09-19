@@ -17,8 +17,11 @@
 
 XboxStartup::XboxStartup(int argc, char** argv)
 {
-#if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB)
+#if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB) && !defined(XBS_WIN32_DESKTOP)
     parseArgs(argc, argv);
+#endif
+#ifdef _WIN32
+    startTitleBarThread();
 #endif
     constexpr float fov = 45.0f;
 
@@ -32,6 +35,9 @@ XboxStartup::XboxStartup(int argc, char** argv)
         if (msaaEnabled)
             SetConfigFlags(FLAG_MSAA_4X_HINT);
         InitWindow(screenWidth, screenHeight, "XBox Startup | Rendering...");
+#ifdef _WIN32
+    setEmbeddedWindowIcon();
+#endif
         int monitor = GetCurrentMonitor();
         int width = GetMonitorWidth(monitor);
         int height = GetMonitorHeight(monitor);
@@ -51,17 +57,14 @@ XboxStartup::XboxStartup(int argc, char** argv)
         if (msaaEnabled) cfg |= FLAG_MSAA_4X_HINT;
         SetConfigFlags(cfg);
         InitWindow(screenWidth, screenHeight, "XBox Startup");
-        
+#ifdef _WIN32
+        setEmbeddedWindowIcon();
+#endif
         if (framerate > 0) SetTargetFPS(framerate);
         if (fullscreen) Fullscreen::Toggle(screenWidth, screenHeight);
 
         camera = { { 0.0f, distance, -6.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, fov, CAMERA_PERSPECTIVE };
     }
-
-#ifdef _WIN32
-    startTitleBarThread();
-    setEmbeddedWindowIcon();
-#endif
 
     rlImGuiSetup(true);
 
@@ -181,7 +184,7 @@ XboxStartup::~XboxStartup()
     CloseWindow();
 }
 
-#if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB)
+#if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB) && !defined(XBS_WIN32_DESKTOP)
 void XboxStartup::parseArgs(int argc, char** argv)
 {
     for (int i = 1; i < argc; i++)
@@ -222,19 +225,25 @@ void XboxStartup::parseArgs(int argc, char** argv)
                         "  %s -m, --msaa               Enable MSAA (Antialiasing)\n"
                         "  %s -g, --grid               Show 3D grid\n"
                         "  %s -w, --wireframe          Enable wireframe mode on startup\n"
-                        "  %s -s, --seed               Set the RNG seed (hex, e.g. %#08" PRIx32 ")\n\n"
-                        "KEYBINDS:\n"
-                        "  ~                     Toggle UI\n"
-                        "  F2                    Toggle FPS overlay\n"
-                        "  F5                    Toggle wireframe\n"
-                        "  F9                    Toggle freecam\n"
-                        "  F11, ALT+ENTER        Toggle fullscreen\n"
-                        "  F12                   Toggle manual rendering\n"
-                        "  G                     Toggle grid\n",
+                        "  %s -s, --seed               Set the RNG seed (hex, e.g. %#08" PRIx32 ")\n",
             program.c_str(), program.c_str(), program.c_str(), program.c_str(), 
             program.c_str(), program.c_str(), program.c_str(), program.c_str(), 
             program.c_str(), program.c_str(), program.c_str(), defSeed
             ));
+            std::puts("KEYBINDS:\n"
+                        "  ~                     Toggle UI\n"
+                        "  F2                    Toggle FPS overlay\n"
+                        "  F5                    Toggle wireframe\n"
+                        "  F9, R3/RS             Toggle freecam\n"
+                        "  F11, ALT+ENTER        Toggle fullscreen\n"
+                        "  F12, R1/RB            Toggle manual rendering\n"
+                        "  Space, Y/Triangle     Pause / resume\n"
+                        "  G                     Toggle grid\n"
+                        "  R2/RT                 Sprint (noclip)\n"
+                        "  L2/LT                 Intensity (manual rendering)\n"
+                        "  WASD, LS              Move (noclip)\n"
+                        "  Mouse, RS             Pan (noclip)\n"
+            );
             std::exit(0);
         }
     }

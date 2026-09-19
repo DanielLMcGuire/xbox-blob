@@ -12,8 +12,6 @@ public:
     void create(int seed);
     void unload();
 
-    void restart(int seed);
-
     void render(const Camera3D &camera, const Blob &blob, IntroSceneRenderer &sceneRenderer,
                 float blobIntensity, float fElapsedTime);
 

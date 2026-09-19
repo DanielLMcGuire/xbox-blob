@@ -29,7 +29,7 @@ public:
     inline bool isRunning() const { return running; }
 
 private:
-#if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB)
+#if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB) && !defined(XBS_WIN32_DESKTOP)
     void parseArgs(int argc, char** argv);
 #endif
     void updateInteractive();
@@ -42,10 +42,10 @@ private:
     bool doAudio = true;
     int framerate = 0;
     bool drawFps = false;
-#if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB)
-    bool msaaEnabled = false;
-#else
+#if defined(__EMSCRIPTEN__) || defined(PLATFORM_WEB) || defined(XBS_WIN32_DESKTOP)
     bool msaaEnabled = true;
+#else
+    bool msaaEnabled = false;
 #endif
     bool gridEnabled = false;
     bool wireframeMode = false;

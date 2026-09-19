@@ -38,7 +38,8 @@ void XboxStartup::updateUI()
 
         if (ImGui::SliderFloat("Elapsed Time", &currentElapsedTime, 0.0f, DEMO_TOTAL_TIME, "%.2f s"))
         {
-            driver->ScrubTo(currentElapsedTime, *blob);
+            driver->Seek(currentElapsedTime, *blob);
+            if (audio) audio->seek(driver->GetElapsedTime() - BLOB_STATIC_END_TIME);
         }
 
         ImGui::Text("FPS: %d", GetFPS());

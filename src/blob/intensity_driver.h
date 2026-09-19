@@ -12,7 +12,7 @@ public:
     bool Advance(float dt, Blob& blob);
 
     void Reset(Blob& blob);
-    void ScrubTo(float targetTime, Blob& blob);
+    void Seek(float targetTime, Blob& blob);
 
     inline float GetElapsedTime() const { return timeElapsed; }
     inline float GetBaseIntensity() const { return baseIntensity; }

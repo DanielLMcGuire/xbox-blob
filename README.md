@@ -17,15 +17,20 @@ https://github.com/user-attachments/assets/62a48c97-93d0-4a97-8428-4f57eee9a890
 
 ### Keybinds
 
-| Key                 | Action                    |
-| ------------------- | ------------------------- |
-| `~`                 | Toggle UI                 |
-| `F2`                | Toggle FPS overlay        |
-| `F5`                | Toggle wireframe (Desktop)|
-| `F9`                | Toggle freecam            |
-| `F11` / `ALT+ENTER` | Toggle fullscreen         |
-| `F12`               | Toggle manual rendering   |
-| `G`                 | Toggle grid               |
+| PC                  | Xbox | PS         | Action                       |
+| ------------------- | ---- | ---------- | ---------------------------- |
+| `~`                 | N/A  | N/A        | Toggle UI                    |
+| `F2`                | N/A  | N/A        | Toggle FPS overlay           |
+| `F5`                | N/A  | N/A        | Toggle wireframe             |
+| `F9`                | `RS` | `R3`       | Toggle freecam               |
+| `F11` / `ALT+ENTER` | N/A  | N/A        | Toggle fullscreen            |
+| `F12`               | `RB` | `R1`       | Toggle manual rendering      |
+| `Space`             | `Y`  | `Triangle` | Pause / resume               |
+| `G`                 | N/A  | N/A        | Toggle grid                  |
+| N/A                 | `RT` | `R2`       | Sprint (noclip)              |
+| N/A                 | `LT` | `L2`       | Intensity (manual rendering) |
+| `WASD`              | `LS` | `LS`       | Move (noclip)                |
+| `Mouse`             | `RS` | `RS`       | Pan (noclip)                 |
 
 ### Options
 
@@ -56,7 +61,7 @@ Captured frames and wavfile is recorded to `frames/`. To process it (which needs
 
 ### Camera Paths
 
-There are 4 camera paths, 0 indexed (0-3)
+There are 4 camera paths
 
 | Scene | Purpose |
 | ----: | ------- |
@@ -68,16 +73,14 @@ There are 4 camera paths, 0 indexed (0-3)
 
 Manual render mode does the following:
 
-1. Disables the camera path
-1. Enables LT to adjust intensity
-1. Allows you to manually control the rendering scene and logo stages via the UI
+1. Stops following the camera path (freezing camera w/o noclip)
+1. Allows use of LT to adjust intensity
+1. Allows use of the UI to manually control the rendering scene and logo stages
 
 ### Known issues
 
 1. Fog is not rendered correctly, workarounds are made
-
 1. Primitive bumpmaps and textures aren't exact yet (I have not finished them.)
-
 1. Some audio quirks and MCPX formulas as well I will have to look into implementing correctly.
 
 ---

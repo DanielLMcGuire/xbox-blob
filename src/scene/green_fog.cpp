@@ -221,25 +221,6 @@ void GreenFog::create(int seed)
     rlFramebufferComplete(intensityFBO);
     rlDisableFramebuffer();
 
-    restart(seed);
-}
-
-void GreenFog::unload()
-{
-    UnloadShader(fogShader);
-    UnloadShader(glowShader);
-    UnloadShader(occlusionShader);
-    for (auto &t : plasmaTex) UnloadTexture(t);
-    rlUnloadVertexArray(quadVAO);
-    rlUnloadVertexBuffer(quadVBO);
-    rlUnloadVertexArray(glowVAO);
-    rlUnloadVertexBuffer(glowVBO);
-    rlUnloadVertexArray(intensityQuadVAO);
-    rlUnloadVertexBuffer(intensityQuadVBO);
-}
-
-void GreenFog::restart(int seed)
-{
     rng.SetSeed(seed);
     camTheta = 3.14159265359f;
     camPhi = 0.0f;
@@ -257,6 +238,20 @@ void GreenFog::restart(int seed)
         rlTextureParameters(plasmaTex[i].id, RL_TEXTURE_MIN_FILTER, RL_TEXTURE_FILTER_LINEAR);
         UnloadImage(images[i]);
     }
+}
+
+void GreenFog::unload()
+{
+    UnloadShader(fogShader);
+    UnloadShader(glowShader);
+    UnloadShader(occlusionShader);
+    for (auto &t : plasmaTex) UnloadTexture(t);
+    rlUnloadVertexArray(quadVAO);
+    rlUnloadVertexBuffer(quadVBO);
+    rlUnloadVertexArray(glowVAO);
+    rlUnloadVertexBuffer(glowVBO);
+    rlUnloadVertexArray(intensityQuadVAO);
+    rlUnloadVertexBuffer(intensityQuadVBO);
 }
 
 void GreenFog::renderIntensityTexture(const Camera3D &camera, const Blob &blob, IntroSceneRenderer &sceneRenderer)
@@ -305,7 +300,6 @@ void GreenFog::renderIntensityTexture(const Camera3D &camera, const Blob &blob, 
     SetShaderValue(occlusionShader, occLoc_isBackdrop, &isBackdrop, SHADER_UNIFORM_INT);
     rlEnableDepthTest();
     rlEnableDepthMask();
-    //sceneRenderer.renderAllSilhouettes(camera, occLoc_mvp, occLoc_model, occlusionShader);
     
     EndShaderMode();
 

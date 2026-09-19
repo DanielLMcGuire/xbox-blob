@@ -3,6 +3,7 @@
 #include "../util/embed.h"
 #include "../util/grid.h"
 #include "../util/text_solvers.h"
+#include "imgui.h"
 #include "rlgl.h"
 
 #include <algorithm>
@@ -15,9 +16,10 @@
 void XboxStartup::updateInteractive()
 {
     const float dt = GetFrameTime();
+    bool havePad = IsGamepadAvailable(0);
 
 #if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB)
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) 
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)) 
     {
         const double now = GetTime();
         if (now - lastClickTime < DOUBLE_CLICK_TIME) 
@@ -39,10 +41,12 @@ void XboxStartup::updateInteractive()
 
     if (IsKeyPressed(KEY_GRAVE)) TOGGLE(showGui);
     if (IsKeyPressed(KEY_F2)) TOGGLE(drawFps);
-    if (IsKeyPressed(KEY_F9)) noclip->Toggle(camera, homeCamera, !manualRender);
-    if (IsKeyPressed(KEY_F12)) TOGGLE(manualRender);
+    if (IsKeyPressed(KEY_F9) || (havePad && IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_THUMB))) noclip->Toggle(camera, homeCamera, !manualRender);
+    if (IsKeyPressed(KEY_F12) || (havePad && IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_TRIGGER_1))) TOGGLE(manualRender);
     if (IsKeyPressed(KEY_G)) TOGGLE(gridEnabled);
-    if (IsKeyPressed(KEY_SPACE)) TOGGLE(isPaused);
+    if (IsKeyPressed(KEY_SPACE) || (havePad && IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_UP))) TOGGLE(isPaused);
+
+    if (audio) audio->setPaused(isPaused);
 
     noclip->Update(camera, dt);
 
@@ -56,7 +60,6 @@ void XboxStartup::updateInteractive()
         {
             if (audio) audio->restart();
             camController.pickPath(cameraPath);
-            greenFog->restart(seed);
         }
     }
 
@@ -106,7 +109,7 @@ void XboxStartup::updateInteractive()
             float pulseIntensity = driver->GetPulseIntensity();
             float baseIntensity = driver->GetBaseIntensity();
 
-            if (manualRender && IsGamepadAvailable(0))
+            if (manualRender && havePad)
             {
                 float trigger = (GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_TRIGGER) + 1.0f) * 0.5f;
                 trigger = std::clamp(trigger, 0.0f, 1.0f);

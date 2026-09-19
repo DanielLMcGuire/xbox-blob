@@ -59,7 +59,7 @@ bool BlobIntensityDriver::Advance(float dt, Blob& blob)
     return true;
 }
 
-void BlobIntensityDriver::ScrubTo(float targetTime, Blob& blob)
+void BlobIntensityDriver::Seek(float targetTime, Blob& blob)
 {
     targetTime = std::max(0.0f, targetTime);
     if (!loop) {

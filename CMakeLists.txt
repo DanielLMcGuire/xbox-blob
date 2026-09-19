@@ -30,6 +30,9 @@ if(WINDBG)
         src/main.cpp
     )
 else()
+    if (WIN32)
+        add_compile_definitions(XBS_WIN32_DESKTOP)
+    endif()
     add_executable(xbox_startup WIN32
         src/main.rc
         src/main.cpp
