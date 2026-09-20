@@ -13,7 +13,7 @@ cmake --build build
 
 ### Demo
 
-https://github.com/user-attachments/assets/62a48c97-93d0-4a97-8428-4f57eee9a890
+https://github.com/DanielLMcGuire/xbox-blob/blob/master/assets/README.md_Demo_fig1.mp4
 
 ### Keybinds
 
