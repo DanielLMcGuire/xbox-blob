@@ -88,7 +88,7 @@ XboxStartup::XboxStartup(int argc, char** argv)
 #ifdef HAS_EMBED
 
     #if HAS_EMBED == 2
-        #if __has_embed("../assets/xbox.ttf")
+        #if __has_embed("../../assets/xbox.ttf")
         #else
             #error FAILED TO FIND FONT!
         #endif
@@ -99,7 +99,7 @@ XboxStartup::XboxStartup(int argc, char** argv)
     #pragma clang diagnostic ignored "-Wc23-extensions"
     #endif
     static constexpr unsigned char font_data[] = {
-        #embed "../assets/xbox.ttf"
+        #embed "../../assets/xbox.ttf"
     };
     #ifdef __clang__
     #pragma clang diagnostic pop
@@ -126,10 +126,10 @@ XboxStartup::XboxStartup(int argc, char** argv)
     );
     io.FontDefault = customFont;
 #else
-    font = LoadFont("../assets/xbox.ttf");
+    font = LoadFont("../../assets/xbox.ttf");
     ImGuiIO& io = ImGui::GetIO();
     ImFontConfig font_cfg;
-    ImFont* customFont = io.Fonts->AddFontFromFileTTF("../assets/xbox.ttf", 13.0f);
+    ImFont* customFont = io.Fonts->AddFontFromFileTTF("../../assets/xbox.ttf", 13.0f);
     io.FontDefault = customFont;
 #endif
 

@@ -99,13 +99,13 @@ float EnvelopeGenerator::processBlock(int stepSamples)
 #endif
 
     static const void* const dispatchTable[] = {
-        [DELAY]   = &&lbl_DELAY,
-        [ATTACK]  = &&lbl_ATTACK,
-        [HOLD]    = &&lbl_HOLD,
-        [DECAY]   = &&lbl_DECAY,
-        [SUSTAIN] = &&lbl_SUSTAIN,
-        [RELEASE] = &&lbl_RELEASE,
-        [OFF]     = &&lbl_OFF,
+        &&lbl_DELAY,
+        &&lbl_ATTACK,
+        &&lbl_HOLD,
+        &&lbl_DECAY,
+        &&lbl_SUSTAIN,
+        &&lbl_RELEASE,
+        &&lbl_OFF
     };
 
 #if defined(__clang__)

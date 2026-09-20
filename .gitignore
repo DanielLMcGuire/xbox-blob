@@ -3,3 +3,4 @@ blob*.mp4
 /frames
 /build-web
 **/imgui.ini
+/build-linux
