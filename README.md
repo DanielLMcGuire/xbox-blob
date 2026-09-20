@@ -3,6 +3,9 @@
 > [!NOTE]
 > Web version on hold until scene rendering issues are fixed
 
+https://raw.githubusercontent.com/DanielLMcGuire/xbox-blob/refs/heads/master/assets/README.md_Demo_fig1.mp4
+
+![Example (made with manual render mode)](/assets/README.md_Demo_fig2.png)
 
 ### Build
 
@@ -10,10 +13,6 @@
 cmake -B build
 cmake --build build
 ```
-
-### Demo
-
-https://raw.githubusercontent.com/DanielLMcGuire/xbox-blob/refs/heads/master/assets/README.md_Demo_fig1.mp4
 
 ### Keybinds
 
