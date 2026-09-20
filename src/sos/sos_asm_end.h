@@ -1,0 +1,11 @@
+#undef note
+#undef rest
+#undef loop
+#undef endloop
+#undef patch
+#undef volume
+#undef xpose
+#undef slur
+#undef ring
+#undef finc
+#undef fset

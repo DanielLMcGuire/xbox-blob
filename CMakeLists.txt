@@ -47,8 +47,6 @@ endif()
 
 target_link_libraries(xbox_startup PRIVATE app raylib)
 
-target_include_directories(sos PRIVATE "${SOUND_OUT_DIR}")
-
 if (APPLE)
     target_link_libraries(xbox_startup PRIVATE
         "-framework IOKit"

@@ -4,10 +4,12 @@
 #include <cstdint>
 #include <memory>
 #include <mutex>
+#include <string>
 #include <vector>
 
 #include "sos_common.h"
 #include "sos_envelope.h"
+#include "sos_program.h"
 #include "sos_sample.h"
 #include "sos_track.h"
 #include "sos_voice.h"
@@ -19,16 +21,24 @@ namespace SOS
 class Sequencer
 {
 public:
-    Sequencer() { initPatches(); initPanning(); }
+    Sequencer() = default;
+    Sequencer(const Sequencer&) = delete;
+    Sequencer& operator=(const Sequencer&) = delete;
 
     void setSampleRate(float sr);
-    void startBootSound();
+
+    bool play(ProgramPtr program, std::string* error = nullptr);
+
+    ProgramPtr program() const { return controlProgram; }
+
     void render(float* output, int frameCount);
 
     inline void setPaused(bool p) { paused.store(p, std::memory_order_relaxed); }
     inline bool isPaused() const  { return paused.load(std::memory_order_relaxed); }
 
     void seek(double seconds);
+
+    void applyPending();
     void seekImmediate(double seconds);
 
 private:
@@ -41,11 +51,11 @@ private:
 
     struct SeekState : Snapshot
     {
-        int     patchIdx[MAX_TRACKS]{};
-        int64_t leadInFrames = 0;
+        ProgramPtr program;
+        int64_t    leadInFrames = 0;
     };
 
-    Patch patches[11];
+    ProgramPtr currentProgram;
     Voice voices[MAX_TRACKS];
     Track tracks[MAX_TRACKS];
 
@@ -57,27 +67,34 @@ private:
     int   pauseFade = 0;
     int   pauseFadeFrames() const;
 
-    std::atomic<bool>          seekPending{false};
-    std::mutex                 seekMutex;
-    std::unique_ptr<SeekState> pendingSeek;
-    int64_t                    leadInFrames = 0;
+    int64_t leadInFrames = 0;
 
+    std::mutex                 mutex;
+    std::atomic<bool>          playPending{false};
+    std::atomic<bool>          seekPending{false};
+    ProgramPtr                 stagedProgram;
+    std::unique_ptr<SeekState> pendingSeek;
+
+    ProgramPtr                 retiredProgram;
+    ProgramPtr                 controlProgram;
     std::unique_ptr<Sequencer> seekScratch;
     float                      seekScratchRate = 0.0f;
     std::vector<Snapshot>      checkpoints;
     std::vector<float>         discardBuf;
 
-    bool     tryInstallSeek();
+    bool tryInstallProgram();
+    bool tryInstallSeek();
+    void installProgramLocked();
+    bool installSeekLocked();
+    void resetTracks();
+
     void     fastForward(int64_t frames);
     Snapshot capture() const;
     void     restore(const Snapshot& s);
-    int      patchIndexOf(const Patch* p) const;
 
     std::vector<float> monoMixL;
     std::vector<float> monoMixR;
 
-    void initPatches();
-    void initPanning();
     void tick();
     void renderActive(float* output, int frameCount);
 };

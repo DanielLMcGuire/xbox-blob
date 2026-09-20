@@ -1,6 +1,7 @@
 #include "app.h"
 #include "../util/fullscreen.h"
 #include "../util/embed.h"
+#include "../sos/boot/sos_boot.h"
 #include "imgui.h"
 #include "rlImGui.h"
 #include "xd_ui_theme.h"
@@ -141,7 +142,7 @@ XboxStartup::XboxStartup(int argc, char** argv)
     if (doAudio)
     {
         if (!captureMode) InitAudioDevice();
-        audio = new SOS::Audio(false);
+        audio = new SOS::Audio(SOS::Boot::program(), false);
     }
 }
 

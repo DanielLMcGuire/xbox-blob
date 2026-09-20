@@ -1,6 +1,9 @@
 #pragma once
 
 #include <cmath>
+#include <cstddef>
+#include <cstdint>
+#include <utility>
 #include <vector>
 
 #include "sos_envelope.h"
@@ -11,6 +14,37 @@ struct SampleBuffer
 {
     std::vector<float> data;
     bool loop = false;
+
+    static SampleBuffer fromFloat(std::vector<float> pcm, bool loop)
+    {
+        SampleBuffer s;
+        s.data = std::move(pcm);
+        s.loop = loop;
+        return s;
+    }
+
+    static SampleBuffer fromPcm8(const uint8_t* src, size_t count, bool loop, bool offsetBinary = false)
+    {
+        SampleBuffer s;
+        s.loop = loop;
+        s.data.resize(count);
+        for (size_t i = 0; i < count; i++)
+        {
+            uint16_t v = offsetBinary ? ((uint16_t)(src[i] ^ 0x80) << 8) : ((uint16_t)src[i] << 8);
+            s.data[i] = (float)(int16_t)v / 32768.0f;
+        }
+        return s;
+    }
+
+    static SampleBuffer fromPcm16(const int16_t* src, size_t count, bool loop)
+    {
+        SampleBuffer s;
+        s.loop = loop;
+        s.data.resize(count);
+        for (size_t i = 0; i < count; i++)
+            s.data[i] = (float)src[i] / 32768.0f;
+        return s;
+    }
 
     inline float read(double pos) const
     {
@@ -37,8 +71,8 @@ struct SampleBuffer
 struct Patch
 {
     SampleBuffer sample;
-    const DSENVELOPEDESC* ampEnv = nullptr;
-    const DSENVELOPEDESC* multiEnv = nullptr;
+    DSENVELOPEDESC ampEnv = OpenEnva;
+    DSENVELOPEDESC multiEnv = OpenEnvm;
 };
 
 }

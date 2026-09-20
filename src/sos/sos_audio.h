@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
+#include <utility>
 
 #include "raylib.h"
 
@@ -12,9 +14,17 @@ namespace SOS
 class Audio
 {
 public:
-    Audio(bool doInit) { if (doInit) init(); }
-    Audio() { init(); }
+    Audio() = default;
+    explicit Audio(ProgramPtr program, bool doInit = true)
+    {
+        setProgram(std::move(program));
+        if (doInit) init();
+    }
     ~Audio() { deinit(); }
+
+    bool setProgram(ProgramPtr program);
+    ProgramPtr program() const { return programPtr; }
+    const std::string& lastError() const { return error; }
 
     bool init();
     void restart();
@@ -29,6 +39,8 @@ public:
 private:
     static void dataCallback(void *bufferData, unsigned int frames);
 
+    ProgramPtr programPtr;
+    std::string error;
     Sequencer sequencer;
     AudioStream stream{};
     bool initialized = false;

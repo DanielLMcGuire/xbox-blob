@@ -9,16 +9,40 @@ namespace SOS
 
 Audio* Audio::s_activeInstance = nullptr;
 
+bool Audio::setProgram(ProgramPtr p)
+{
+    if (!p)
+    {
+        error = "no program";
+        return false;
+    }
+    if (!p->validate(&error)) return false;
+
+    error.clear();
+    programPtr = std::move(p);
+    if (initialized) sequencer.play(programPtr);
+    return true;
+}
+
 bool Audio::init()
 {
     if (initialized) return true;
+    if (!programPtr)
+    {
+        error = "no program";
+        return false;
+    }
     if (!IsAudioDeviceReady()) return false;
 
     stream = LoadAudioStream(48000, 32, 2);
     if (!IsAudioStreamValid(stream)) return false;
 
     sequencer.setSampleRate(static_cast<float>(stream.sampleRate));
-    sequencer.startBootSound();
+    if (!sequencer.play(programPtr, &error))
+    {
+        UnloadAudioStream(stream);
+        return false;
+    }
 
     if (hasDeferredSeek)
     {
@@ -39,7 +63,7 @@ void Audio::restart()
     if (!initialized) return;
 
     StopAudioStream(stream);
-    sequencer.startBootSound();
+    sequencer.play(nullptr);
     PlayAudioStream(stream);
 }
 
@@ -66,13 +90,14 @@ void Audio::deinit()
 
 bool Audio::exportWav(const char* filename, double durationSeconds, uint32_t sampleRate)
 {
-    if (!filename || durationSeconds <= 0.0 || sampleRate == 0)
+    if (!filename || durationSeconds <= 0.0 || sampleRate == 0 || !programPtr)
         return false;
 
     const uint32_t totalFrames = static_cast<uint32_t>(durationSeconds * sampleRate);
     Sequencer exportSeq;
     exportSeq.setSampleRate(static_cast<float>(sampleRate));
-    exportSeq.startBootSound();
+    if (!exportSeq.play(programPtr)) return false;
+    exportSeq.applyPending();
 
     constexpr uint32_t BLOCK = 4096;
     std::vector<int16_t> pcmBuf(static_cast<size_t>(totalFrames) * 2);

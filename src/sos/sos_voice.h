@@ -38,8 +38,8 @@ public:
         patch = p;
         if (p)
         {
-            ampEG.setDesc(p->ampEnv, sampleRate);
-            multiEG.setDesc(p->multiEnv, sampleRate);
+            ampEG.setDesc(&p->ampEnv, sampleRate);
+            multiEG.setDesc(&p->multiEnv, sampleRate);
         }
         samplePos = 0.0;
     }
