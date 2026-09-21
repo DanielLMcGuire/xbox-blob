@@ -1,5 +1,6 @@
 add_subdirectory("app")
 add_subdirectory("blob")
 add_subdirectory("scene")
+add_subdirectory("shields")
 add_subdirectory("sos")
 add_subdirectory("util")

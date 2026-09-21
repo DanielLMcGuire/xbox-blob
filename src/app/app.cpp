@@ -24,6 +24,8 @@ XboxStartup::XboxStartup(int argc, char** argv)
 #ifdef _WIN32
     startTitleBarThread();
 #endif
+
+    if (shieldsStartup) shieldsEnabled = true;
     constexpr float fov = 45.0f;
 
     if (captureMode)
@@ -83,6 +85,11 @@ XboxStartup::XboxStartup(int argc, char** argv)
     logoRenderer->create();
     greenFog = new GreenFog();
     greenFog->create(seed);
+    if (shieldsEnabled)
+    {
+        shields = new ShieldManager();
+        shields->create(seed);
+    }
     camController.init();
     camController.pickPath(cameraPath);
 
@@ -177,6 +184,11 @@ XboxStartup::~XboxStartup()
         greenFog->unload();
         delete greenFog;
     }
+    if (shields)
+    {
+        shields->unload();
+        delete shields;
+    }
 
 
     if (doAudio && !captureMode) CloseAudioDevice();
@@ -204,6 +216,7 @@ void XboxStartup::parseArgs(int argc, char** argv)
         else if (arg == "-m" || arg == "--msaa") msaaEnabled = true;
         else if (arg == "-g" || arg == "--grid") gridEnabled = true;
         else if (arg == "-w" || arg == "--wireframe") wireframeMode = true;
+        else if (arg == "-sh" || arg == "--shields") shieldsStartup = true;
         else if (arg == "-s" || arg == "--seed") {
             if (i + 1 < argc) seed = static_cast<int32_t>(std::stoul(argv[++i], nullptr, 16));
         }
@@ -226,10 +239,11 @@ void XboxStartup::parseArgs(int argc, char** argv)
                         "  %s -m, --msaa               Enable MSAA (Antialiasing)\n"
                         "  %s -g, --grid               Show 3D grid\n"
                         "  %s -w, --wireframe          Enable wireframe mode on startup\n"
+                        "  %s -sh, --shields           Render the  shields (off by default)\n"
                         "  %s -s, --seed               Set the RNG seed (hex, e.g. %#08" PRIx32 ")\n",
             program.c_str(), program.c_str(), program.c_str(), program.c_str(), 
             program.c_str(), program.c_str(), program.c_str(), program.c_str(), 
-            program.c_str(), program.c_str(), program.c_str(), defSeed
+            program.c_str(), program.c_str(), program.c_str(), program.c_str(), defSeed
             ));
             std::puts("KEYBINDS:\n"
                         "  ~                     Toggle UI\n"

@@ -12,6 +12,7 @@
 #include "../scene/logo_renderer.h"
 #include "../scene/green_fog.h"
 #include "../scene/cam_control.h"
+#include "../shields/shield_manager.h"
 
 #include <algorithm>
 #include <cmath>
@@ -35,6 +36,7 @@ private:
     void updateInteractive();
     void updateCapture();
     void updateUI();
+    void renderShields(ShieldPass pass, float intensity);
 
     bool showGui = false;
     bool captureMode = false;
@@ -49,6 +51,8 @@ private:
 #endif
     bool gridEnabled = false;
     bool wireframeMode = false;
+    bool shieldsEnabled = false;
+    bool shieldsStartup = false;
     int32_t seed = defSeed;
     bool cursorEnabled = true;
 
@@ -67,6 +71,7 @@ private:
     IntroSceneRenderer* sceneRenderer = nullptr;
     LogoRenderer* logoRenderer = nullptr;
     GreenFog* greenFog = nullptr;
+    ShieldManager* shields = nullptr;
 
     CameraController camController;
     int cameraPath = 0;

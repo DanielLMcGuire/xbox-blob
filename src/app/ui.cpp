@@ -29,6 +29,8 @@ void XboxStartup::updateUI()
         ImGui::Checkbox("Manual Render (F12)", &manualRender);
         ImGui::Checkbox("Render Scene", &renderSceneGeom);
         ImGui::Checkbox("Render Logo", &renderSlash);
+        if (shieldsStartup)
+            ImGui::Checkbox("Render Shields", &shieldsEnabled);
 
         ImGui::Spacing();
         XboxTitleText("Time");

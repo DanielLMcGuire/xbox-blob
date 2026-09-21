@@ -121,7 +121,16 @@ void XboxStartup::updateInteractive()
             if (renderSceneGeom) 
                 sceneRenderer->render(camera, *blob, true);
 
-            blob->Render(camera, pulseIntensity, intensity, baseIntensity, currentElapsedTime);
+            if (shieldsStartup) 
+            {
+
+                renderShields(ShieldPass::FarSide, intensity);
+
+                blob->Render(camera, driver->GetPulseIntensity(), intensity, driver->GetBaseIntensity(), currentElapsedTime);
+
+                renderShields(ShieldPass::NearSide, intensity);
+            } 
+            else blob->Render(camera, driver->GetPulseIntensity(), intensity, driver->GetBaseIntensity(), currentElapsedTime);
             
             if (renderSceneGeom) 
                 greenFog->render(camera, *blob, *sceneRenderer, intensity, currentElapsedTime);

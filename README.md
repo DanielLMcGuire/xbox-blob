@@ -44,6 +44,7 @@ cmake --build build
 | `-m`       | `--msaa`        | Enable MSAA (Antialiasing)                          |
 | `-g`       | `--grid`        | Show 3D grid                                        |
 | `-w`       | `--wireframe`   | Enable wireframe mode on startup                    |
+| `-sh`      | `--shields`     | Render the prototype shields (off by default)       |
 | `-s`       | `--seed`        | Set the RNG seed (hex, e.g. `0x76543210`)           |
 
 Captured frames and wavfile is recorded to `frames/`. To process it (which needs FFMPEG):
@@ -78,9 +79,11 @@ Manual render mode does the following:
 
 ### Known issues
 
-1. Fog is not rendered correctly, workarounds are made
+1. Fog is not rendered correctly, workarounds are made in the meantime.
 1. Primitive bumpmaps and textures aren't exact yet (I have not finished them.)
 1. Some audio quirks and MCPX formulas as well I will have to look into implementing correctly.
+1. Shields do not have proper cubemaps yet.
+1. The logo doesnt have the shading at the top right.
 
 ---
 
