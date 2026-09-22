@@ -3,9 +3,7 @@
 > [!NOTE]
 > Web version on hold until scene rendering issues are fixed
 
-https://raw.githubusercontent.com/DanielLMcGuire/xbox-blob/refs/heads/master/assets/README.md_Demo_fig1.mp4
-
-![Example (made with manual render mode)](/assets/README.md_Demo_fig2.png)
+https://github.com/user-attachments/assets/f083b06d-4c04-446b-88a2-a84605b4f88b
 
 ### Build
 
