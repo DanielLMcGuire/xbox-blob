@@ -31,15 +31,20 @@ def read_mono_samples(path: Path):
         raise ValueError(f"{path.name}: expected mono, got {nch} channels")
 
     values = []
+
     if sw == 2:
         for (s,) in struct.iter_unpack('<h', raw):
             signed8 = round(s / 256.0)
             signed8 = max(-128, min(127, signed8))
             values.append(signed8 & 0xFF)
+
     elif sw == 1:
-        values.extend(raw)
+        for b in raw:
+            signed8 = b - 128
+            values.append(signed8 & 0xFF)
+
     else:
-        raise ValueError(f"{path.name}: unsupported sample width {sw*8}-bit")
+        raise ValueError(f"{path.name}: unsupported sample width {sw * 8}-bit")
 
     return values
 

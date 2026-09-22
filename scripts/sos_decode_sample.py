@@ -17,21 +17,23 @@ def parse_bytes(path: Path) -> bytes:
     text = path.read_text()
     return bytes(int(h, 16) for h in HEX_RE.findall(text))
 
-def to_pcm16(raw: bytes, xor: bool) -> bytes:
+def to_pcm8(raw: bytes, xor: bool) -> bytes:
     out = bytearray()
+
     for b in raw:
         v = (b ^ 0x80) if xor else b
         signed8 = v - 256 if v >= 128 else v
-        sample16 = signed8 << 8
-        out += struct.pack('<h', sample16)
+        wav8 = (signed8 + 128) & 0xFF
+        out.append(wav8)
+
     return bytes(out)
 
-def write_wav(path: Path, pcm16: bytes, rate: int):
+def write_wav(path: Path, pcm8: bytes, rate: int):
     with wave.open(str(path), 'wb') as w:
         w.setnchannels(1)
-        w.setsampwidth(2)
+        w.setsampwidth(1)
         w.setframerate(rate)
-        w.writeframes(pcm16)
+        w.writeframes(pcm8)
 
 def main():
     ap = argparse.ArgumentParser()
@@ -46,9 +48,9 @@ def main():
 
     for name, xor in SAMPLES:
         raw = parse_bytes(src_dir / name)
-        pcm16 = to_pcm16(raw, xor)
+        pcm8 = to_pcm8(raw, xor)
         out_path = out_dir / (Path(name).stem + ".wav")
-        write_wav(out_path, pcm16, args.rate)
+        write_wav(out_path, pcm8, args.rate)
 
 if __name__ == "__main__":
     main()
