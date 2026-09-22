@@ -4,3 +4,4 @@ blob*.mp4
 /build-web
 **/imgui.ini
 /build-linux
+__pycache__

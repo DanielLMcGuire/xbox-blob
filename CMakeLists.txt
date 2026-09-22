@@ -20,6 +20,7 @@ endif()
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 include("cmake/raylib.cmake")
 include("cmake/sound.cmake")
+include("cmake/mesh.cmake")
 
 add_subdirectory("thirdparty")
 add_subdirectory("src")

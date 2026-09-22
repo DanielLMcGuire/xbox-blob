@@ -11,7 +11,7 @@ add_library(sos_boot STATIC
     "${SOUND_OUT_DIR}/samples.h"
 )
 
-add_dependencies(sos_boot generate_sound_samples)
+add_dependencies(sos_boot sample_generation)
 target_include_directories(sos_boot PRIVATE "${SOUND_OUT_DIR}")
 target_link_libraries(sos_boot PUBLIC sos_core PRIVATE raylib)
 

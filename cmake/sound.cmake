@@ -13,4 +13,4 @@ add_custom_command(
     VERBATIM
 )
 
-add_custom_target(generate_sound_samples DEPENDS "${SOUND_OUT_DIR}/samples.h")
+add_custom_target(sample_generation DEPENDS "${SOUND_OUT_DIR}/samples.h")
