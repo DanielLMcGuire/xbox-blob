@@ -37,6 +37,7 @@ private:
     void updateCapture();
     void updateUI();
     void renderShields(ShieldPass pass, float intensity);
+    void createShields();
 
     bool showGui = false;
     bool captureMode = false;
@@ -53,6 +54,7 @@ private:
     bool wireframeMode = false;
     bool shieldsEnabled = false;
     bool shieldsStartup = false;
+    double shieldBakeDebt = 0.0;
     int32_t seed = defSeed;
     bool cursorEnabled = true;
 

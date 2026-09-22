@@ -35,8 +35,14 @@ constexpr float BAND_MAX_LATITUDE = +0.45f * PI;
 constexpr float BAND_OUTSIDE_RADIUS =
     CAP_MID_RADIUS * CAP_RADIUS_SCALE * CAP_RADIUS_SCALE * CAP_RADIUS_SCALE;
 
+constexpr int ENV_MAP_SIZE = 1024;
+constexpr float ENV_NEAR = 0.1f;
+constexpr float ENV_FAR = 800.0f;
+constexpr float ENV_SCENE_ANIM_POS = 1.0f;
+
 constexpr float SOLID_ROTATION_RATE = 2.0f;
 constexpr float SPEED_ACCEL = 0.8f;
+
 constexpr float RADIAL_OFFSET = 2.0f;
 
 constexpr Vector3 BLOB_SPEC_COLOR = {0.4f, 1.0f, 0.3f};

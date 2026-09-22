@@ -24,8 +24,6 @@ XboxStartup::XboxStartup(int argc, char** argv)
 #ifdef _WIN32
     startTitleBarThread();
 #endif
-
-    if (shieldsStartup) shieldsEnabled = true;
     constexpr float fov = 45.0f;
 
     if (captureMode)
@@ -73,6 +71,7 @@ XboxStartup::XboxStartup(int argc, char** argv)
 
     homeCamera = camera;
     lastClickTime = -DOUBLE_CLICK_TIME;
+    currentElapsedTime = 0.0f;
 
     BlobSetRandomSeed(seed);
 
@@ -85,10 +84,10 @@ XboxStartup::XboxStartup(int argc, char** argv)
     logoRenderer->create();
     greenFog = new GreenFog();
     greenFog->create(seed);
-    if (shieldsEnabled)
+    if (shieldsStartup)
     {
-        shields = new ShieldManager();
-        shields->create(seed);
+        createShields();
+        shieldsEnabled = true;
     }
     camController.init();
     camController.pickPath(cameraPath);
@@ -190,7 +189,6 @@ XboxStartup::~XboxStartup()
         delete shields;
     }
 
-
     if (doAudio && !captureMode) CloseAudioDevice();
 
     rlImGuiShutdown();
@@ -239,7 +237,7 @@ void XboxStartup::parseArgs(int argc, char** argv)
                         "  %s -m, --msaa               Enable MSAA (Antialiasing)\n"
                         "  %s -g, --grid               Show 3D grid\n"
                         "  %s -w, --wireframe          Enable wireframe mode on startup\n"
-                        "  %s -sh, --shields           Render the  shields (off by default)\n"
+                        "  %s -sh, --shields           Render the shields (off by default)\n"
                         "  %s -s, --seed               Set the RNG seed (hex, e.g. %#08" PRIx32 ")\n",
             program.c_str(), program.c_str(), program.c_str(), program.c_str(), 
             program.c_str(), program.c_str(), program.c_str(), program.c_str(), 
@@ -264,4 +262,3 @@ void XboxStartup::parseArgs(int argc, char** argv)
     }
 }
 #endif
-

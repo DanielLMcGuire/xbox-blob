@@ -55,16 +55,11 @@ void XboxStartup::updateCapture()
         if (renderSceneGeom)
             sceneRenderer->render(camera, *blob, true);
         
-        if (shieldsStartup) 
-        {
+        renderShields(ShieldPass::FarSide, intensity);
 
-            renderShields(ShieldPass::FarSide, intensity);
+        blob->Render(camera, driver->GetPulseIntensity(), intensity, driver->GetBaseIntensity(), currentElapsedTime);
 
-            blob->Render(camera, driver->GetPulseIntensity(), intensity, driver->GetBaseIntensity(), currentElapsedTime);
-
-            renderShields(ShieldPass::NearSide, intensity);
-        } 
-        else blob->Render(camera, driver->GetPulseIntensity(), intensity, driver->GetBaseIntensity(), currentElapsedTime);
+        renderShields(ShieldPass::NearSide, intensity);
         
         if (renderSceneGeom) 
             greenFog->render(camera, *blob, *sceneRenderer, intensity, currentElapsedTime);

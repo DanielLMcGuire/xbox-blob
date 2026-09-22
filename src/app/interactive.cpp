@@ -15,7 +15,14 @@
 
 void XboxStartup::updateInteractive()
 {
-    const float dt = GetFrameTime();
+    float dt = GetFrameTime();
+    if (shieldBakeDebt > 0.0)
+    {
+        float consumed = dt;
+        if (shieldBakeDebt < (double)consumed) consumed = (float)shieldBakeDebt;
+        dt -= consumed;
+        shieldBakeDebt -= consumed;
+    }
     bool havePad = IsGamepadAvailable(0);
 
 #if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB)
@@ -67,6 +74,11 @@ void XboxStartup::updateInteractive()
 
     if (audio && isBlobStaticEnded && !isPaused)
         audio->init();
+
+    if (shieldsEnabled && !shields)
+    {
+        createShields();
+    }
 
     Vector3 splinePos, splineLook;
     if (!manualRender)
@@ -121,16 +133,11 @@ void XboxStartup::updateInteractive()
             if (renderSceneGeom) 
                 sceneRenderer->render(camera, *blob, true);
 
-            if (shieldsStartup) 
-            {
+            renderShields(ShieldPass::FarSide, intensity);
 
-                renderShields(ShieldPass::FarSide, intensity);
+            blob->Render(camera, pulseIntensity, intensity, baseIntensity, currentElapsedTime);
 
-                blob->Render(camera, driver->GetPulseIntensity(), intensity, driver->GetBaseIntensity(), currentElapsedTime);
-
-                renderShields(ShieldPass::NearSide, intensity);
-            } 
-            else blob->Render(camera, driver->GetPulseIntensity(), intensity, driver->GetBaseIntensity(), currentElapsedTime);
+            renderShields(ShieldPass::NearSide, intensity);
             
             if (renderSceneGeom) 
                 greenFog->render(camera, *blob, *sceneRenderer, intensity, currentElapsedTime);

@@ -21,6 +21,8 @@ public:
 
     void render(const Camera3D &camera, const Blob &blob, bool withShadows);
 
+    void renderFixedLight(const Matrix &view, const Matrix &proj, Vector3 eyePos, Vector3 lightPos, Vector3 tint);
+
     void renderAllSilhouettes(const Camera3D &camera, int mvpLoc, int modelLoc, Shader shader);
 
 private:

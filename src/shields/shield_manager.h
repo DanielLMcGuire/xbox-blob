@@ -2,9 +2,11 @@
 
 #include "raylib.h"
 #include "shield_config.h"
+#include "shield_envmap.h"
 #include "shield_motion.h"
 
 class Blob;
+class IntroSceneRenderer;
 
 enum class ShieldPass
 {
@@ -20,7 +22,7 @@ public:
     ShieldManager(const ShieldManager &) = delete;
     ShieldManager &operator=(const ShieldManager &) = delete;
 
-    void create(int seed);
+    void create(int seed, IntroSceneRenderer &scene, const Blob &blob);
     void unload();
 
     bool isReady() const { return ready; }
@@ -54,7 +56,9 @@ private:
     SolidShieldMotion solids[ShieldConfig::SOLID_SHIELD_COUNT];
     BandShieldMotion bands[ShieldConfig::BAND_SHIELD_COUNT];
 
+    ShieldEnvMap envMap;
+
     Shader shader{};
     int loc_mvp = -1, loc_model = -1, loc_eyePos = -1, loc_blobLightPos = -1, loc_moodLightPos = -1;
-    int loc_shading = -1, loc_blobIntensity = -1, loc_blobSpecColor = -1;
+    int loc_shading = -1, loc_blobIntensity = -1, loc_blobSpecColor = -1, loc_envMap = -1;
 };

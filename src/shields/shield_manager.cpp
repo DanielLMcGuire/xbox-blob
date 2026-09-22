@@ -2,6 +2,7 @@
 
 #include "shield_mesh.h"
 #include "../blob/blob.h"
+#include "../scene/scene_renderer.h"
 #include "../util/embed.h"
 
 #include <rlgl.h>
@@ -67,7 +68,7 @@ void ShieldManager::GpuMesh::unload()
     *this = GpuMesh{};
 }
 
-void ShieldManager::create(int newSeed)
+void ShieldManager::create(int newSeed, IntroSceneRenderer &scene, const Blob &blob)
 {
     using namespace ShieldConfig;
 
@@ -78,7 +79,6 @@ void ShieldManager::create(int newSeed)
                                     CAP_HORIZ_DIM, CAP_VERT_DIM);
     solidMesh.upload(cap.vertices.data(), (int)(cap.vertices.size() * sizeof(ShieldVertex)),
                      cap.indices.data(), (int)cap.indices.size());
-
 
     std::vector<ShieldVertex> vertices;
     std::vector<uint16_t> indices;
@@ -99,7 +99,7 @@ void ShieldManager::create(int newSeed)
     }
 
     bandMesh.upload(vertices.data(), (int)(vertices.size() * sizeof(ShieldVertex)), indices.data(),
-                     (int)indices.size());
+                    (int)indices.size());
 
 #ifdef HAS_EMBED
     #if HAS_EMBED == 2
@@ -174,6 +174,17 @@ void ShieldManager::create(int newSeed)
     loc_shading = GetShaderLocation(shader, "shading");
     loc_blobIntensity = GetShaderLocation(shader, "blobIntensity");
     loc_blobSpecColor = GetShaderLocation(shader, "blobSpecColor");
+    loc_envMap = GetShaderLocation(shader, "envMap");
+
+    const Vector3 tint = {blob.color.x, blob.color.y, blob.color.z};
+    if (!envMap.create(scene, blob, tint))
+    {
+        UnloadShader(shader);
+        shader = Shader{};
+        solidMesh.unload();
+        bandMesh.unload();
+        return;
+    }
 
     restart();
     ready = true;
@@ -181,6 +192,7 @@ void ShieldManager::create(int newSeed)
 
 void ShieldManager::unload()
 {
+    envMap.unload();
     solidMesh.unload();
     bandMesh.unload();
     if (shader.id) UnloadShader(shader);
@@ -284,6 +296,11 @@ void ShieldManager::render(const Camera3D &camera, const Blob &blob, float blobI
     SetShaderValue(shader, loc_blobIntensity, &lightIntensity, SHADER_UNIFORM_FLOAT);
     SetShaderValue(shader, loc_blobSpecColor, &blobSpec, SHADER_UNIFORM_VEC3);
 
+    const int envSlot = 0;
+    rlActiveTextureSlot(envSlot);
+    rlEnableTextureCubemap(envMap.id());
+    SetShaderValue(shader, loc_envMap, &envSlot, SHADER_UNIFORM_INT);
+
     if (drawCount > 0)
     {
         solidMesh.bind();
@@ -311,6 +328,8 @@ void ShieldManager::render(const Camera3D &camera, const Blob &blob, float blobI
         bandMesh.unbind();
     }
 
+    rlActiveTextureSlot(0);
+    rlDisableTextureCubemap();
     EndShaderMode();
 
     rlDisableBackfaceCulling();

@@ -331,6 +331,55 @@ void IntroSceneRenderer::renderAllSilhouettes(const Camera3D &camera, int mvpLoc
     }
 }
 
+void IntroSceneRenderer::renderFixedLight(const Matrix &view, const Matrix &proj, Vector3 eyePos, Vector3 lightPos,
+                                          Vector3 tint)
+{
+    Matrix viewProj = MatrixMultiply(view, proj);
+
+    Vector3 material = kMaterialFallback;
+    if (Vector3Length(tint) > 0.0001f) material = tint;
+
+    Vector3 diffuseColor = Vector3Multiply(material, kLightDiffuse);
+    Vector3 specularColor = Vector3Multiply(material, kLightSpecular);
+    Vector3 ambientColor = {0, 0, 0};
+    Vector3 atten = {1.0f, 0.001f, 0.001f};
+
+    for (PrimitiveTypes type = (PrimitiveTypes)0; type < pt_NoTypes; type = (PrimitiveTypes)(type + 1))
+    {
+        bool bump = (type == pt_Sphere || type == pt_SurfOfRev);
+        Shader &shader = bump ? bumpShader : phongShader;
+        const LitShaderLocs &locs = bump ? bumpLocs : phongLocs;
+
+        BeginShaderMode(shader);
+        SetShaderValue(shader, locs.eyePos, &eyePos, SHADER_UNIFORM_VEC3);
+        SetShaderValue(shader, locs.diffuse, &diffuseColor, SHADER_UNIFORM_VEC3);
+        SetShaderValue(shader, locs.specular, &specularColor, SHADER_UNIFORM_VEC3);
+        SetShaderValue(shader, locs.ambient, &ambientColor, SHADER_UNIFORM_VEC3);
+        SetShaderValue(shader, locs.atten, &atten, SHADER_UNIFORM_VEC3);
+        
+        int useShadowFlag = 0;
+        SetShaderValue(shader, locs.useShadow, &useShadowFlag, SHADER_UNIFORM_INT);
+        SetShaderValue(shader, locs.lightPos, &lightPos, SHADER_UNIFORM_VEC3);
+        
+        if (bump)
+            SetShaderValueTexture(shader, locs.normalMap, bumpNormalMap);
+
+        for (const auto &inst : primSets[type].instances)
+        {
+            Matrix model = inst.worldMatrix(animTables);
+            Matrix mvp = MatrixMultiply(model, viewProj);
+            Matrix normalMat = MatrixTranspose(MatrixInvert(model));
+
+            SetShaderValueMatrix(shader, locs.mvp, mvp);
+            SetShaderValueMatrix(shader, locs.model, model);
+            SetShaderValueMatrix(shader, locs.normalMat, normalMat);
+
+            drawMeshRaw(meshes[type][inst.idxVersion]);
+        }
+        EndShaderMode();
+    }
+}
+
 void IntroSceneRenderer::render(const Camera3D &camera, const Blob &blob, bool withShadows)
 {
     Matrix view = GetCameraMatrix(camera);
