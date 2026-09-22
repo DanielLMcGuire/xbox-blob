@@ -207,7 +207,7 @@ void XboxStartup::parseArgs(int argc, char** argv)
         else if (arg == "-fs" || arg == "--fullscreen") fullscreen = true;
         else if (arg == "-na" || arg == "--no-audio") doAudio = false;
         else if (arg == "-f" || arg == "--fps") {
-            if (i + 1 < argc) cameraPath = std::clamp(std::stoi(argv[++i]), -1, 3);
+            if (i + 1 < argc) framerate = std::stoi(argv[++i]);
         }
         else if (arg == "-path" || arg == "--camera-path") {
             if (i + 1 < argc) cameraPath = std::stoi(argv[++i]);
