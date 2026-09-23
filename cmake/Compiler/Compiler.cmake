@@ -1,5 +1,6 @@
 include("${CMAKE_CURRENT_LIST_DIR}/CompilerFlags.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/InlineAssembly.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/CXX_EMBED.cmake")
 
 if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     include(${CMAKE_CURRENT_LIST_DIR}/ClangFix.cmake)

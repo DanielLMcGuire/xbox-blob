@@ -15,9 +15,7 @@ endif()
 include("cmake/Compiler/Compiler.cmake")
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
-include("cmake/assets/sound.cmake")
-include("cmake/assets/mesh.cmake")
-include("cmake/shaders/embed.cmake")
+include("cmake/assets/assets.cmake")
 include("cmake/thirdparty/raylib.cmake")
 
 add_subdirectory("thirdparty")

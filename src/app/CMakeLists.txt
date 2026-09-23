@@ -4,6 +4,10 @@ if(WIN32)
     list(APPEND APP_LIBS windowstuff)
 endif()
 
+if(NOT HAVE_CXX_EMBED)
+    list(APPEND APP_LIBS font_file)
+endif()
+
 add_library(app 
     ${CMAKE_CURRENT_SOURCE_DIR}/app.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/capture.cpp
