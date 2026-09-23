@@ -39,6 +39,8 @@ private:
     void renderShields(ShieldPass pass, float intensity);
     void createShields();
 
+    Font loadFont();
+
     bool showGui = false;
     bool captureMode = false;
     bool fullscreen = false;

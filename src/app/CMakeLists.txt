@@ -4,6 +4,7 @@ set(APP_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/core.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/interactive.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ui.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/font.cpp
 )
 
 if(WIN32)

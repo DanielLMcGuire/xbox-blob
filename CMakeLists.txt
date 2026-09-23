@@ -12,6 +12,8 @@ if(WIN32)
     enable_language(RC)
 endif()
 
+include("cmake/CompilerFlags.cmake")
+
 if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     include(${CMAKE_CURRENT_LIST_DIR}/cmake/ClangFix.cmake)
 elseif(WIN32 AND MSVC)
@@ -19,9 +21,9 @@ elseif(WIN32 AND MSVC)
 endif()
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
-include("cmake/shaders/embed.cmake")
 include("cmake/assets/sound.cmake")
 include("cmake/assets/mesh.cmake")
+include("cmake/shaders/embed.cmake")
 include("cmake/thirdparty/raylib.cmake")
 
 add_subdirectory("thirdparty")

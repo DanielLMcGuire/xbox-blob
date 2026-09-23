@@ -91,50 +91,9 @@ XboxStartup::XboxStartup(int argc, char** argv)
     camController.init();
     camController.pickPath(cameraPath);
 
-#ifdef HAS_EMBED
-
-    #ifdef __clang__
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wc23-extensions"
-    #endif
-    static constexpr unsigned char font_data[] = {
-        #embed "../../assets/xbox.ttf"
-    };
-    #ifdef __clang__
-    #pragma clang diagnostic pop
-    #endif
-
-    static constexpr int font_data_size = sizeof(font_data);
-    font = LoadFontFromMemory(
-        ".ttf",
-        font_data,
-        font_data_size,
-        32,
-        nullptr,
-        0
-    );
-
-    ImGuiIO& io = ImGui::GetIO();
-    ImFontConfig font_cfg;
-    font_cfg.FontDataOwnedByAtlas = false;
-    ImFont* customFont = io.Fonts->AddFontFromMemoryTTF(
-        (void*)font_data, 
-        font_data_size, 
-        13.0f, 
-        &font_cfg
-    );
-    io.FontDefault = customFont;
-#else
-    font = LoadFont("../../assets/xbox.ttf");
-    ImGuiIO& io = ImGui::GetIO();
-    ImFontConfig font_cfg;
-    ImFont* customFont = io.Fonts->AddFontFromFileTTF("../../assets/xbox.ttf", 13.0f);
-    io.FontDefault = customFont;
-#endif
+    font = loadFont();
 
     ApplyXboxDashboardTheme();
-
-    if (!IsFontValid(font)) font = GetFontDefault();
 
     if (captureMode) driver->loop = false;
     if (doAudio)

@@ -11,6 +11,7 @@
 void XboxStartup::updateUI()
 {
     rlImGuiBegin();
+    ImGui::SetNextWindowSize(ImVec2(380.0f, 390.0f), ImGuiCond_FirstUseEver);
 
     if (XboxBegin("Options", &showGui))
     {
