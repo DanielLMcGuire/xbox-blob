@@ -1,10 +1,13 @@
 #include "green_fog.h"
-#include "scene_texgen.h"
-#include "scene_renderer.h"
-#include "../defines.h"
-#include "../blob/blob.h"
 
 #include <rlgl.h>
+
+#include "../defines.h"
+
+#include "scene_texgen.h"
+#include "scene_renderer.h"
+#include "../blob/blob.h"
+
 #include <algorithm>
 #include <cmath>
 #include <cstddef>

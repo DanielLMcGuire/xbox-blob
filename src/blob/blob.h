@@ -1,11 +1,12 @@
 #pragma once
 
 #include "raylib.h"
-#include <vector>
-#include <cstdint>
 
 #include "bloblet.h"
 #include "blob_bump.h"
+
+#include <vector>
+#include <cstdint>
 
 class Blob
 {

@@ -1,5 +1,7 @@
 #pragma once
+
 #include "raymath.h"
+
 #include <cmath>
 
 inline Vector3 RotateLH(Vector3 v, Quaternion q)

@@ -1,6 +1,9 @@
 #pragma once
+
 #include "../defines.h"
+
 #include "../util/qrand.h"
+
 #include "blob.h"
 
 class BlobIntensityDriver

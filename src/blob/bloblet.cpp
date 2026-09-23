@@ -1,8 +1,8 @@
 #include "bloblet.h"
 
+#include "../defines.h"
 #include "blob.h"
 #include "blob_math.h"
-#include "../defines.h"
 
 #include <cmath>
 #include <algorithm>

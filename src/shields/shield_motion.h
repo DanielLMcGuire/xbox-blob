@@ -2,6 +2,7 @@
 
 #include "raylib.h"
 #include "raymath.h"
+
 #include "../util/qrand.h"
 
 class SolidShieldMotion

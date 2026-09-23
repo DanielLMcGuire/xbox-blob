@@ -1,6 +1,8 @@
 #pragma once
+
 #include "raylib.h"
 #include "raymath.h"
+
 #include "logo_mesh_gen.h"
 
 class LogoRenderer

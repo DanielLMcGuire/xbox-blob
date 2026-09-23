@@ -1,11 +1,13 @@
 #include "logo_renderer.h"
+
+#include <rlgl.h>
+
+#include "../defines.h"
 #include "logo_data.h"
 #include "text_data.h"
 #include "tm_pixels.h"
 #include "scene_texgen.h"
-#include "../defines.h"
 
-#include <rlgl.h>
 #include <algorithm>
 #include <cmath>
 #include <cstddef>

@@ -1,6 +1,8 @@
 #include "cam_control.h"
+
 #include "../defines.h"
 #include "../blob/blob_math.h"
+
 #include <algorithm>
 #include <cmath>
 

@@ -1,15 +1,11 @@
 #pragma once
 
+#include "sos_common.h"
+
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <vector>
-
-#include "sos_common.h"
-
-#ifndef kPi
-#define kPi 3.141592653589793
-#endif
 
 namespace SOS::Waveform
 {

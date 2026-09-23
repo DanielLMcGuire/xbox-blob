@@ -1,14 +1,14 @@
 #pragma once
 
+#include "sos_common.h"
+#include "sos_sample.h"
+
 #include <cmath>
 #include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "sos_common.h"
-#include "sos_sample.h"
 
 namespace SOS {
 

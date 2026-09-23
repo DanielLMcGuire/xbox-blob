@@ -3,6 +3,10 @@
 #include <cstddef>
 #include <cstdint>
 
+#ifndef kPi
+#define kPi 3.141592653589793
+#endif
+
 namespace SOS 
 {
 

@@ -1,6 +1,9 @@
 #pragma once
+
 #include "scene_prim_types.h"
+
 #include <cstdint>
+
 static const RotAnimSeq theRotAnimSeq[] =
 {
 {2,0,48,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}

@@ -1,11 +1,11 @@
 #include "shield_manager.h"
 
+#include <rlgl.h>
+#include "raymath.h"
+
 #include "shield_mesh.h"
 #include "../blob/blob.h"
 #include "../scene/scene_renderer.h"
-
-#include <rlgl.h>
-#include "raymath.h"
 
 #include <algorithm>
 #include <cstddef>

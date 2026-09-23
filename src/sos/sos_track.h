@@ -1,10 +1,9 @@
 #pragma once
 
-#include <cstddef>
-#include <cstdint>
-
 #include "sos_common.h"
 
+#include <cstddef>
+#include <cstdint>
 
 namespace SOS 
 {

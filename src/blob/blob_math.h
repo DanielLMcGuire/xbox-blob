@@ -1,6 +1,7 @@
 #pragma once
 
 #include "raymath.h"
+
 #include <cmath>
 
 inline float QuickLength(const Vector3& v)

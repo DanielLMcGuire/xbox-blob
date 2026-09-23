@@ -1,9 +1,12 @@
 #pragma once
+
 #include "raylib.h"
 #include "raymath.h"
+
 #include "scene_math.h"
 #include "scene_prim_types.h"
 #include "scene_anim.h"
+
 #include <vector>
 
 struct PrimitiveInstance

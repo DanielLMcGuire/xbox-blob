@@ -1,4 +1,5 @@
 #include "sos_envelope.h"
+
 #include <algorithm>
 #include <cmath>
 

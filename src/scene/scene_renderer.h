@@ -1,9 +1,12 @@
 #pragma once
+
 #include "raylib.h"
 #include "raymath.h"
+
 #include "scene_anim.h"
 #include "scene_instances.h"
 #include "scene_mesh_gen.h"
+
 #include <array>
 #include <vector>
 

@@ -1,6 +1,9 @@
 #include "scene_mesh_gen.h"
-#include "scene_math.h"
+
 #include "raymath.h"
+
+#include "scene_math.h"
+
 #include <cmath>
 
 static void AppendStripAsTriangles(std::vector<uint16_t> &out, const std::vector<uint16_t> &strip)

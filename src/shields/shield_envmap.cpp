@@ -1,11 +1,11 @@
 #include "shield_envmap.h"
 
+#include <rlgl.h>
+#include "raymath.h"
+
 #include "shield_config.h"
 #include "../scene/scene_renderer.h"
 #include "../blob/blob.h"
-
-#include <rlgl.h>
-#include "raymath.h"
 
 void ShieldEnvMap::FaceBasis(int face, Vector3 &forward, Vector3 &up)
 {

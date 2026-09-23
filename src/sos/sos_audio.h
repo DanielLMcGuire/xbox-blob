@@ -1,12 +1,12 @@
 #pragma once
 
-#include <cstdint>
-#include <string>
-#include <utility>
-
 #include "raylib.h"
 
 #include "sos_sequencer.h"
+
+#include <cstdint>
+#include <string>
+#include <utility>
 
 namespace SOS 
 {

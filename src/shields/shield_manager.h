@@ -1,6 +1,7 @@
 #pragma once
 
 #include "raylib.h"
+
 #include "shield_config.h"
 #include "shield_envmap.h"
 #include "shield_motion.h"

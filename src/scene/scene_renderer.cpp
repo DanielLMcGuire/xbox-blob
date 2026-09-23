@@ -1,11 +1,15 @@
 #include "scene_renderer.h"
-#include "scene_data.h"
-#include "scene_texgen.h"
-#include "../defines.h"
-#include "../blob/blob.h"
 
 #include <rlgl.h>
 #include "raymath.h"
+
+#include "../defines.h"
+
+#include "scene_data.h"
+#include "scene_texgen.h"
+
+#include "../blob/blob.h"
+
 #include <cmath>
 
 static constexpr Vector3 kMaterialFallback = {0.2079f, 1.0f, 0.100f};

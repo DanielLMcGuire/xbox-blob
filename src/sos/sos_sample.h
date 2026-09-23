@@ -1,12 +1,12 @@
 #pragma once
 
+#include "sos_envelope.h"
+
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <utility>
 #include <vector>
-
-#include "sos_envelope.h"
 
 namespace SOS {
 

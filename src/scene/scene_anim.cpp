@@ -1,6 +1,8 @@
 #include "scene_anim.h"
+
 #include "scene_data.h"
 #include "scene_math.h"
+
 #include <cmath>
 
 std::vector<int16_t> SceneAnimTables::decompressIndices(const char *p_indices, int nindices)

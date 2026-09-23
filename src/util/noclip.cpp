@@ -1,6 +1,8 @@
 #include "noclip.h"
+
 #include "raylib.h"
 #include "raymath.h"
+
 #include <algorithm>
 
 void NoclipCamera::SyncFromCamera(const Camera3D& camera)

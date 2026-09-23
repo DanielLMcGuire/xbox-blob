@@ -1,6 +1,9 @@
 #pragma once
+
 #include "raylib.h"
+
 #include "scene_prim_types.h"
+
 #include <cstdint>
 #include <vector>
 

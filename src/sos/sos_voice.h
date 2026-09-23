@@ -1,14 +1,14 @@
 #pragma once
 
-#include <algorithm>
-#include <cmath>
-#include <cstdint>
 #include "raymath.h"
 
 #include "sos_common.h"
 #include "sos_envelope.h"
 #include "sos_sample.h"
 
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
 
 namespace SOS 
 {

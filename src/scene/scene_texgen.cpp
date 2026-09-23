@@ -1,6 +1,9 @@
 #include "scene_texgen.h"
-#include "../util/qrand.h"
+
 #include "raymath.h"
+
+#include "../util/qrand.h"
+
 #include <algorithm>
 #include <cstdint>
 #include <cstring>

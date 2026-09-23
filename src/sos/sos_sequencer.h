@@ -1,12 +1,5 @@
 #pragma once
 
-#include <atomic>
-#include <cstdint>
-#include <memory>
-#include <mutex>
-#include <string>
-#include <vector>
-
 #include "sos_common.h"
 #include "sos_envelope.h"
 #include "sos_program.h"
@@ -14,6 +7,12 @@
 #include "sos_track.h"
 #include "sos_voice.h"
 
+#include <atomic>
+#include <cstdint>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <vector>
 
 namespace SOS 
 {

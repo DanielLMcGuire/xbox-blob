@@ -1,4 +1,5 @@
 #pragma once
+
 enum PrimitiveTypes
 {
 	pt_Sphere    = 0,
