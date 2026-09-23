@@ -1,7 +1,6 @@
 #include "blob.h"
 #include "../defines.h"
 #include "blob_math.h"
-#include "../util/embed.h"
 
 #include <rlgl.h>
 #include "raymath.h"
@@ -135,20 +134,6 @@ void Blob::Load()
     Restart();
 
 #ifdef HAS_EMBED
-    #if HAS_EMBED == 2
-        #ifdef __EMSCRIPTEN__
-            #if !__has_embed("shaders/blob-web.vert")    || !__has_embed("shaders/blob-web.frag") || \
-                !__has_embed("shaders/bloblet-web.vert") || !__has_embed("shaders/bloblet-web.frag")
-                #error FAILED TO FIND WEB SHADERS!
-            #endif
-        #else
-            #if !__has_embed("shaders/blob.vert")    || !__has_embed("shaders/blob.frag") || \
-                !__has_embed("shaders/bloblet.vert") || !__has_embed("shaders/bloblet.frag")
-                #error FAILED TO FIND DESKTOP SHADERS!
-            #endif
-        #endif
-    #endif
-
     #ifdef __clang__
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wc23-extensions"

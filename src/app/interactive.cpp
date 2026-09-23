@@ -1,6 +1,5 @@
 #include "app.h"
 #include "../util/fullscreen.h"
-#include "../util/embed.h"
 #include "../util/grid.h"
 #include "../util/text_solvers.h"
 #include "imgui.h"

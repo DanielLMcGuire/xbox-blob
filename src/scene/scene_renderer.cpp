@@ -2,7 +2,6 @@
 #include "scene_data.h"
 #include "scene_texgen.h"
 #include "../defines.h"
-#include "../util/embed.h"
 #include "../blob/blob.h"
 
 #include <rlgl.h>
@@ -58,22 +57,6 @@ void IntroSceneRenderer::create()
     UnloadImage(normalImg);
 
 #ifdef HAS_EMBED
-    #if HAS_EMBED == 2
-        #ifdef __EMSCRIPTEN__
-            #if !__has_embed("shaders/scene_phong-web.vert") || !__has_embed("shaders/scene_phong-web.frag") || \
-                 !__has_embed("shaders/scene_bump-web.vert")  || !__has_embed("shaders/scene_bump-web.frag")  || \
-                 !__has_embed("shaders/scene_shadow-web.vert") || !__has_embed("shaders/scene_shadow-web.frag")
-                #error FAILED TO FIND WEB SHADERS!
-            #endif
-        #else
-            #if !__has_embed("shaders/scene_phong.vert") || !__has_embed("shaders/scene_phong.frag") || \
-                 !__has_embed("shaders/scene_bump.vert")  || !__has_embed("shaders/scene_bump.frag")  || \
-                 !__has_embed("shaders/scene_shadow.vert") || !__has_embed("shaders/scene_shadow.frag")
-                #error FAILED TO FIND DESKTOP SHADERS!
-            #endif
-        #endif
-    #endif
-
     #ifdef __clang__
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wc23-extensions"

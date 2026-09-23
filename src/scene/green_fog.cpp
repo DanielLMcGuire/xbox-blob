@@ -2,7 +2,6 @@
 #include "scene_texgen.h"
 #include "scene_renderer.h"
 #include "../defines.h"
-#include "../util/embed.h"
 #include "../blob/blob.h"
 
 #include <rlgl.h>
@@ -104,20 +103,6 @@ void GreenFog::create(int seed)
     rlDisableVertexArray();
 
 #ifdef HAS_EMBED
-    #if HAS_EMBED == 2
-        #if !__has_embed("shaders/greenfog.vert")
-            #error FAILED TO FIND greenfog.vert!
-        #endif
-        #if !__has_embed("shaders/greenfog.frag")
-            #error FAILED TO FIND greenfog.frag!
-        #endif
-        #if !__has_embed("shaders/glow.vert")
-            #error FAILED TO FIND glow.vert!
-        #endif
-        #if !__has_embed("shaders/glow.frag")
-            #error FAILED TO FIND glow.frag!
-        #endif
-    #endif
     #ifdef __clang__
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wc23-extensions"
@@ -153,14 +138,6 @@ void GreenFog::create(int seed)
 #endif
 
 #ifdef HAS_EMBED
-    #if HAS_EMBED == 2
-        #if !__has_embed("shaders/occlusion.vert")
-            #error FAILED TO FIND occlusion.vert!
-        #endif
-        #if !__has_embed("shaders/occlusion.frag")
-            #error FAILED TO FIND occlusion.frag!
-        #endif
-    #endif
     #ifdef __clang__
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wc23-extensions"

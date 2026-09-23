@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(WINDBG "Enable win32 output" OFF)
+option(XBOX_BLOB_FORCE_NO_EMBED "Force the .inl fallback even if the compiler supports #embed" OFF)
 
 if(WIN32)
     enable_language(RC)
@@ -18,9 +19,10 @@ elseif(WIN32 AND MSVC)
 endif()
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
-include("cmake/raylib.cmake")
-include("cmake/sound.cmake")
-include("cmake/mesh.cmake")
+include("cmake/shaders/embed.cmake")
+include("cmake/assets/sound.cmake")
+include("cmake/assets/mesh.cmake")
+include("cmake/thirdparty/raylib.cmake")
 
 add_subdirectory("thirdparty")
 add_subdirectory("src")

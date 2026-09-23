@@ -4,7 +4,6 @@
 #include "tm_pixels.h"
 #include "scene_texgen.h"
 #include "../defines.h"
-#include "../util/embed.h"
 
 #include <rlgl.h>
 #include <algorithm>
@@ -115,26 +114,6 @@ void LogoRenderer::create()
     UnloadImage(tmImg);
 
 #ifdef HAS_EMBED
-    #if HAS_EMBED == 2
-        #if !__has_embed("shaders/logo_unlit.vert")
-            #error FAILED TO FIND logo_unlit.vert!
-        #endif
-        #if !__has_embed("shaders/logo_unlit.frag")
-            #error FAILED TO FIND logo_unlit.frag!
-        #endif
-        #if !__has_embed("shaders/logo_interior.frag")
-            #error FAILED TO FIND logo_interior.frag!
-        #endif
-        #if !__has_embed("shaders/logo_tm.frag")
-            #error FAILED TO FIND logo_tm.frag!
-        #endif
-        #if !__has_embed("shaders/logo_text.vert")
-            #error FAILED TO FIND logo_text.vert!
-        #endif
-        #if !__has_embed("shaders/logo_text.frag")
-            #error FAILED TO FIND logo_text.frag!
-        #endif
-    #endif
     #ifdef __clang__
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wc23-extensions"

@@ -1,6 +1,5 @@
 #include "app.h"
 #include "../util/fullscreen.h"
-#include "../util/embed.h"
 #include "../sos/boot/sos_boot.h"
 #include "imgui.h"
 #include "rlImGui.h"
@@ -93,13 +92,6 @@ XboxStartup::XboxStartup(int argc, char** argv)
     camController.pickPath(cameraPath);
 
 #ifdef HAS_EMBED
-
-    #if HAS_EMBED == 2
-        #if __has_embed("../../assets/xbox.ttf")
-        #else
-            #error FAILED TO FIND FONT!
-        #endif
-    #endif
 
     #ifdef __clang__
     #pragma clang diagnostic push

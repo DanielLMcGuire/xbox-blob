@@ -15,3 +15,4 @@ add_library(scene
 add_dependencies(scene mesh_generation)
 target_include_directories(scene PRIVATE "${MESH_OUT_DIR}")
 target_link_libraries(scene PRIVATE raylib)
+xbb_target_embed(scene)

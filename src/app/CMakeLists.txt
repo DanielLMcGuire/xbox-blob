@@ -15,3 +15,4 @@ endif()
 add_library(app ${APP_SOURCES})
 
 target_link_libraries(app PRIVATE raylib rlimgui scene shields sos sos_boot blob noclip)
+xbb_target_embed(app)

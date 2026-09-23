@@ -3,7 +3,6 @@
 #include "shield_mesh.h"
 #include "../blob/blob.h"
 #include "../scene/scene_renderer.h"
-#include "../util/embed.h"
 
 #include <rlgl.h>
 #include "raymath.h"
@@ -102,18 +101,6 @@ void ShieldManager::create(int newSeed, IntroSceneRenderer &scene, const Blob &b
                     (int)indices.size());
 
 #ifdef HAS_EMBED
-    #if HAS_EMBED == 2
-        #ifdef __EMSCRIPTEN__
-            #if !__has_embed("shaders/shield-web.vert") || !__has_embed("shaders/shield-web.frag")
-                #error FAILED TO FIND WEB SHIELD SHADERS!
-            #endif
-        #else
-            #if !__has_embed("shaders/shield.vert") || !__has_embed("shaders/shield.frag")
-                #error FAILED TO FIND DESKTOP SHIELD SHADERS!
-            #endif
-        #endif
-    #endif
-
     #ifdef __clang__
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wc23-extensions"

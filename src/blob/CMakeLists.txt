@@ -7,3 +7,4 @@ add_library(blob
 )
 
 target_link_libraries(blob PRIVATE raylib)
+xbb_target_embed(blob)

@@ -6,3 +6,4 @@ add_library(shields
 )
 
 target_link_libraries(shields PRIVATE raylib scene blob)
+xbb_target_embed(shields)
