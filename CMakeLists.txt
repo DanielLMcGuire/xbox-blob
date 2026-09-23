@@ -12,13 +12,7 @@ if(WIN32)
     enable_language(RC)
 endif()
 
-include("cmake/CompilerFlags.cmake")
-
-if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    include(${CMAKE_CURRENT_LIST_DIR}/cmake/ClangFix.cmake)
-elseif(WIN32 AND MSVC)
-    include(${CMAKE_CURRENT_LIST_DIR}/cmake/MSVCFix.cmake)
-endif()
+include("cmake/Compiler/Compiler.cmake")
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 include("cmake/assets/sound.cmake")

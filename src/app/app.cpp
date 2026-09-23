@@ -12,7 +12,7 @@
 
 #if defined(_WIN32)
     #undef DrawText
-    #include "win32_window.h"
+    #include "../util/win32_window.h"
 #endif
 
 XboxStartup::XboxStartup(int argc, char** argv)
@@ -21,7 +21,7 @@ XboxStartup::XboxStartup(int argc, char** argv)
     parseArgs(argc, argv);
 #endif
 #ifdef _WIN32
-    startTitleBarThread();
+    WindowStuff::startTitleBarThread();
 #endif
     constexpr float fov = 45.0f;
 
@@ -36,7 +36,7 @@ XboxStartup::XboxStartup(int argc, char** argv)
             SetConfigFlags(FLAG_MSAA_4X_HINT);
         InitWindow(screenWidth, screenHeight, "XBox Startup | Rendering...");
 #ifdef _WIN32
-    setEmbeddedWindowIcon();
+    WindowStuff::setEmbeddedWindowIcon();
 #endif
         int monitor = GetCurrentMonitor();
         int width = GetMonitorWidth(monitor);
@@ -58,7 +58,7 @@ XboxStartup::XboxStartup(int argc, char** argv)
         SetConfigFlags(cfg);
         InitWindow(screenWidth, screenHeight, "XBox Startup");
 #ifdef _WIN32
-        setEmbeddedWindowIcon();
+        WindowStuff::setEmbeddedWindowIcon();
 #endif
         if (framerate > 0) SetTargetFPS(framerate);
         if (fullscreen) Fullscreen::Toggle(screenWidth, screenHeight);
@@ -93,7 +93,7 @@ XboxStartup::XboxStartup(int argc, char** argv)
 
     font = loadFont();
 
-    ApplyXboxDashboardTheme();
+    XboxUI::ApplyXboxDashboardTheme();
 
     if (captureMode) driver->loop = false;
     if (doAudio)
@@ -144,6 +144,9 @@ XboxStartup::~XboxStartup()
 
     rlImGuiShutdown();
     CloseWindow();
+#ifdef _WIN32
+    WindowStuff::stopTitleBarThread();
+#endif
 }
 
 #if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB) && !defined(XBS_WIN32_DESKTOP)

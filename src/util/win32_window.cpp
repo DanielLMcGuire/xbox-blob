@@ -1,5 +1,7 @@
 #include "win32_window.h"
 
+#include <atomic>
+
 #define Rectangle Win32Rectangle
 #define CloseWindow Win32CloseWindow
 #define ShowCursor Win32ShowCursor
@@ -31,6 +33,10 @@
 
 static bool g_DarkModeSupported = false;
 static DWORD g_DwmAttribute = 0;
+
+static std::thread g_WatcherThread;
+static HANDLE g_hStopEvent = nullptr;
+static std::atomic<bool> g_ThreadStarted{false};
 
 DWORD GetWindowsBuildNumber() {
     HMODULE hMod = GetModuleHandleW(L"ntdll.dll");
@@ -138,7 +144,7 @@ void CALLBACK WinEventProc(HWINEVENTHOOK, DWORD, HWND hwnd, LONG idObject, LONG,
     ApplyDarkMode(hwnd, IsSystemDarkMode());
 }
 
-void DarkModeWatcherThread()
+void StartDarkModeWatcherThread()
 {
     const wchar_t* keyPath = L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize";
     HKEY hKey = nullptr;
@@ -146,52 +152,88 @@ void DarkModeWatcherThread()
     if (RegOpenKeyExW(HKEY_CURRENT_USER, keyPath, 0, KEY_READ | KEY_NOTIFY, &hKey) != ERROR_SUCCESS)
         return;
 
-    HANDLE hEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
-    if (!hEvent)
+    HANDLE hRegEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+    if (!hRegEvent)
     {
         RegCloseKey(hKey);
         return;
     }
 
-    HWINEVENTHOOK hHook = 
-        SetWinEventHook(EVENT_OBJECT_CREATE, EVENT_OBJECT_SHOW, nullptr, 
-            WinEventProc, GetCurrentProcessId(), 0, WINEVENT_OUTOFCONTEXT);
+    HWINEVENTHOOK hHook = SetWinEventHook(
+        EVENT_OBJECT_CREATE, EVENT_OBJECT_SHOW, nullptr, 
+        WinEventProc, GetCurrentProcessId(), 0, WINEVENT_OUTOFCONTEXT
+    );
 
     ApplyToAllProcessWindows(IsSystemDarkMode());
 
-    while (true)
+    HANDLE waitHandles[2] = { g_hStopEvent, hRegEvent };
+
+    bool keepRunning = true;
+    while (keepRunning)
     {
-        LONG result = RegNotifyChangeKeyValue(hKey, FALSE, REG_NOTIFY_CHANGE_LAST_SET, hEvent, TRUE);
-        if (result != ERROR_SUCCESS)
+        LONG regResult = RegNotifyChangeKeyValue(hKey, FALSE, REG_NOTIFY_CHANGE_LAST_SET, hRegEvent, TRUE);
+        if (regResult != ERROR_SUCCESS)
             break;
 
-        HANDLE handles[] = { hEvent };
+        DWORD waitResult = MsgWaitForMultipleObjects(2, waitHandles, FALSE, INFINITE, QS_ALLINPUT);
 
-        DWORD waitResult = MsgWaitForMultipleObjects(1, handles, FALSE, INFINITE, QS_ALLINPUT);
-
-        if (waitResult == WAIT_OBJECT_0)
+        switch (waitResult)
         {
-            Sleep(50);
-            ApplyToAllProcessWindows(IsSystemDarkMode());
-        } else if (waitResult == WAIT_OBJECT_0 + 1) {
-            MSG msg;
+            case WAIT_OBJECT_0:
+                keepRunning = false;
+                break;
 
-            while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
+            case WAIT_OBJECT_0 + 1:
+                Sleep(50);
+                ApplyToAllProcessWindows(IsSystemDarkMode());
+                break;
+
+            case WAIT_OBJECT_0 + 2:
             {
-                TranslateMessage(&msg);
-                DispatchMessageW(&msg);
+                MSG msg;
+                while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
+                {
+                    TranslateMessage(&msg);
+                    DispatchMessageW(&msg);
+                }
+                break;
             }
-        } else {
-            break;
+
+            default:
+                keepRunning = false;
+                break;
         }
     }
 
     if (hHook)
         UnhookWinEvent(hHook);
 
-    CloseHandle(hEvent);
+    CloseHandle(hRegEvent);
     RegCloseKey(hKey);
 }
+
+void StopDarkModeWatcherThread()
+{
+    if (!g_ThreadStarted.exchange(false))
+        return;
+
+    if (g_hStopEvent)
+        SetEvent(g_hStopEvent);
+
+    if (g_WatcherThread.joinable())
+        g_WatcherThread.join();
+
+    if (g_hStopEvent)
+    {
+        CloseHandle(g_hStopEvent);
+        g_hStopEvent = nullptr;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+namespace WindowStuff
+{
 
 void startTitleBarThread()
 {
@@ -200,8 +242,22 @@ void startTitleBarThread()
     if (!g_DarkModeSupported)
         return;
 
-    std::thread watcher(DarkModeWatcherThread);
-    watcher.detach();
+    if (g_ThreadStarted.load())
+        return;
+
+    g_hStopEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+    if (!g_hStopEvent)
+        return;
+
+    g_ThreadStarted.store(true);
+    g_WatcherThread = std::thread(StartDarkModeWatcherThread);
+
+    std::atexit(StopDarkModeWatcherThread);
+}
+
+void stopTitleBarThread()
+{
+    StopDarkModeWatcherThread();
 }
 
 void setEmbeddedWindowIcon()
@@ -241,3 +297,5 @@ void setEmbeddedWindowIcon()
         reinterpret_cast<LONG_PTR>(icon)
     );
 }
+
+} // namespace WindowStuff

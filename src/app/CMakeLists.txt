@@ -1,4 +1,10 @@
-set(APP_SOURCES
+set(APP_LIBS raylib rlimgui scene shields sos sos_boot blob noclip)
+
+if(WIN32)
+    list(APPEND APP_LIBS windowstuff)
+endif()
+
+add_library(app 
     ${CMAKE_CURRENT_SOURCE_DIR}/app.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/capture.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/core.cpp
@@ -7,13 +13,5 @@ set(APP_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/font.cpp
 )
 
-if(WIN32)
-    list(APPEND APP_SOURCES
-        ${CMAKE_CURRENT_SOURCE_DIR}/win32_window.cpp
-    )
-endif()
-
-add_library(app ${APP_SOURCES})
-
-target_link_libraries(app PRIVATE raylib rlimgui scene shields sos sos_boot blob noclip)
+target_link_libraries(app PRIVATE ${APP_LIBS})
 xbb_target_embed(app)

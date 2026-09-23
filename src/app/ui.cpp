@@ -13,16 +13,16 @@ void XboxStartup::updateUI()
     rlImGuiBegin();
     ImGui::SetNextWindowSize(ImVec2(380.0f, 390.0f), ImGuiCond_FirstUseEver);
 
-    if (XboxBegin("Options", &showGui))
+    if (XboxUI::XboxBegin("Options", &showGui))
     {
-        XboxTitleText("Visual");
+        XboxUI::XboxTitleText("Visual");
         ImGui::Separator();
 
         ImGui::Checkbox("Show 3D Grid (G)", &gridEnabled);
         ImGui::Checkbox("Draw FPS Overlay (F2)", &drawFps);
 #if !defined(__EMSCRIPTEN__) && !defined(PLATFORM_WEB)
         ImGui::Checkbox("Wireframe Mode (F5)", &wireframeMode);
-        if (XboxButton("Toggle Fullscreen (F11 / Alt+Enter)"))
+        if (XboxUI::XboxButton("Toggle Fullscreen (F11 / Alt+Enter)"))
             Fullscreen::Toggle(screenWidth, screenHeight);
 #endif
         ImGui::SliderInt("Camera Path", &cameraPath, -1, 3);
@@ -34,7 +34,7 @@ void XboxStartup::updateUI()
             ImGui::Checkbox("Render Shields", &shieldsEnabled);
 
         ImGui::Spacing();
-        XboxTitleText("Time");
+        XboxUI::XboxTitleText("Time");
         ImGui::Separator();
 
         ImGui::Checkbox("Pause (Space)", &isPaused);

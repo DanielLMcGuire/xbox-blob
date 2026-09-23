@@ -2,6 +2,18 @@ add_library(sos_core STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/sos_envelope.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sos_program.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sos_sequencer.cpp
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/sos_asm.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/sos_asm_end.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/sos_audio.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/sos_common.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/sos_envelope.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/sos_program.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/sos_sample.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/sos_sequencer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/sos_track.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/sos_voice.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/sos_waveform.h
 )
 
 target_link_libraries(sos_core PRIVATE raylib)

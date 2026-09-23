@@ -2,6 +2,9 @@
 #include "imgui.h"
 #include <cstdarg>
 
+namespace XboxUI
+{
+
 namespace XboxPalette
 {
     static const ImVec4 Green        = ImVec4(139.f/255.f, 200.f/255.f,  24.f/255.f, 1.00f);
@@ -145,4 +148,6 @@ inline bool XboxBegin(const char* name, bool* p_open = nullptr, ImGuiWindowFlags
     bool visible = ImGui::Begin(name, p_open, flags);
     ImGui::PopStyleColor();
     return visible;
+}
+
 }
