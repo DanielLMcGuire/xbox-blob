@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SOS_ASM_IN_USE
+#define SOS_ASM_IN_USE
 
 #include "sos_common.h"
 
@@ -23,3 +24,5 @@ enum Pitches
     cc4=48, cs4=49, dd4=50, ds4=51, ee4=52, ff4=53, fs4=54, gg4=55, gs4=56, aa4=57, as4=58, bb4=59,
     cc5=60, cs5=61, dd5=62, ds5=63, ee5=64, ff5=65, fs5=66, gg5=67, gs5=68, aa5=69, as5=70, bb5=71
 };
+
+#endif
