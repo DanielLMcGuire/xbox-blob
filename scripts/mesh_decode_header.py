@@ -129,8 +129,8 @@ def decode_point_arrays(text: str, header_path: Path, out_dir: Path):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--logo-header", default="src/scene/logo_data.h")
-    ap.add_argument("--text-header", default="src/scene/text_data.h")
+    ap.add_argument("--logo-header", default="build/meshes/logo_data.h")
+    ap.add_argument("--text-header", default="build/meshes/text_data.h")
     ap.add_argument("--out-dir", default="assets/meshes")
     args = ap.parse_args()
 
