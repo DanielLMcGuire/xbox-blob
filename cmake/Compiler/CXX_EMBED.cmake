@@ -1,6 +1,6 @@
 include(CheckSourceCompiles)
 
-set(EMBED_TO_INL_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/scripts/embed_to_inl.py")
+set(EMBED_TO_INL_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/scripts/embed_fallback.py")
 
 if(XBOX_BLOB_FORCE_NO_EMBED)
     set(HAVE_CXX_EMBED FALSE)

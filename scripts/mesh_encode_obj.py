@@ -3,6 +3,8 @@ import argparse
 import struct
 from pathlib import Path
 
+from embed_common import add_embed_argument, embed_view_lines, write_bin, EMBED_PRELUDE, EMBED_EPILOGUE
+
 GROUPS = {
     "logo": {
         "subdir": "logo",
@@ -151,7 +153,7 @@ def format_decimal_array_body(values, width=6) -> str:
 def as_signed_bytes(raw: bytes) -> list[int]:
     return [b - 256 if b >= 128 else b for b in raw]
 
-def encode_group(group_key: str, cfg: dict, assets_dir: Path, out_dir: Path):
+def encode_group(group_key: str, cfg: dict, assets_dir: Path, out_dir: Path, embed: bool = False):
     mesh_dir = assets_dir / cfg["subdir"]
     meshes = {}
     for stem in cfg["meshes"]:
@@ -174,6 +176,8 @@ def encode_group(group_key: str, cfg: dict, assets_dir: Path, out_dir: Path):
     payload_lines = []
 
     header_lines = ["#pragma once"]
+    if embed:
+        header_lines.append(EMBED_PRELUDE)
     header_lines.append(f"struct {cfg['struct_name']}")
     header_lines.append("{")
     if cfg["has_uv"]:
@@ -210,12 +214,22 @@ def encode_group(group_key: str, cfg: dict, assets_dir: Path, out_dir: Path):
 
         raw_indices = compress_indices(indices)
 
+        header_lines.append(f"const int vertex_count_{stem}_0 = {len(verts)};")
+        if embed:
+            verts_bin = f"{stem}_verts.bin"
+            indices_bin = f"{stem}_indices.bin"
+            write_bin(out_dir / verts_bin, struct.pack(f"<{len(raw_verts)}h", *raw_verts))
+            write_bin(out_dir / indices_bin, raw_indices)
+            header_lines += embed_view_lines("inline const", f"verts_{stem}_0C", "short", verts_bin)
+            header_lines.append(f"const int index_count_{stem}_0 = {len(indices)};")
+            header_lines += embed_view_lines("inline const", f"indices_{stem}_0C", "char", indices_bin)
+            continue
+
         verts_inc = f"{stem}_verts.inc"
         indices_inc = f"{stem}_indices.inc"
         (out_dir / verts_inc).write_text(format_decimal_array_body(raw_verts))
         (out_dir / indices_inc).write_text(format_decimal_array_body(as_signed_bytes(raw_indices)))
 
-        header_lines.append(f"const int vertex_count_{stem}_0 = {len(verts)};")
         header_lines.append(f"short verts_{stem}_0C[] =")
         header_lines.append("{")
         header_lines.append(f'\t#include "{verts_inc}"')
@@ -231,7 +245,17 @@ def encode_group(group_key: str, cfg: dict, assets_dir: Path, out_dir: Path):
         points = parse_point_obj(obj_path)
         if not points:
             raise ValueError(f"{obj_path}: expected at least one 'v' line")
-        emit_point_array(header_lines, cfg["struct_name"], name, points)
+        if embed:
+            flat = [float(f"{c:.6f}") for p in points for c in p]
+            bin_name = f"{name}.bin"
+            write_bin(out_dir / bin_name, struct.pack(f"<{len(flat)}f", *flat))
+            header_lines.append(f"static_assert(sizeof({cfg['struct_name']}) == 3 * sizeof(float));")
+            header_lines += embed_view_lines("inline const", name, cfg["struct_name"], bin_name)
+        else:
+            emit_point_array(header_lines, cfg["struct_name"], name, points)
+
+    if embed:
+        header_lines.append(EMBED_EPILOGUE)
 
     header_path = out_dir / cfg["header_name"]
     header_path.write_text("\n".join(header_lines) + "\n")
@@ -241,6 +265,7 @@ def main():
     ap.add_argument("--assets-dir", default="assets/meshes")
     ap.add_argument("--out-dir", default="mesh_gen_out")
     ap.add_argument("--group", choices=list(GROUPS), help="encode only this group")
+    add_embed_argument(ap)
     args = ap.parse_args()
 
     assets_dir = Path(args.assets_dir)
@@ -248,7 +273,7 @@ def main():
 
     keys = [args.group] if args.group else list(GROUPS)
     for key in keys:
-        encode_group(key, GROUPS[key], assets_dir, out_dir)
+        encode_group(key, GROUPS[key], assets_dir, out_dir, args.embed)
 
 if __name__ == "__main__":
     main()

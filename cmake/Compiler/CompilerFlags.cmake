@@ -173,10 +173,8 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     if(APPLE)
         set(MAP_FLAG "-Wl,-map,$<TARGET_FILE_DIR:$<TARGET_PROPERTY:NAME>>/$<TARGET_FILE_BASE_NAME:$<TARGET_PROPERTY:NAME>>.map")
     elseif(WIN32 AND NOT MINGW AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        # Clang on Windows defaults to lld-link, which expects MSVC-style flags (/MAP:filename)
         set(MAP_FLAG "-Wl,/MAP:$<TARGET_FILE_DIR:$<TARGET_PROPERTY:NAME>>/$<TARGET_FILE_BASE_NAME:$<TARGET_PROPERTY:NAME>>.map")
     else()
-        # Linux, GNU ld, ld.lld, or MinGW
         set(MAP_FLAG "-Wl,-Map=$<TARGET_FILE_DIR:$<TARGET_PROPERTY:NAME>>/$<TARGET_FILE_BASE_NAME:$<TARGET_PROPERTY:NAME>>.map")
     endif()
 

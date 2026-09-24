@@ -8,7 +8,11 @@ add_custom_command(
     COMMAND Python3::Interpreter "${CMAKE_CURRENT_SOURCE_DIR}/scripts/mesh_encode_obj.py"
             --assets-dir "${MESH_ASSETS_DIR}"
             --out-dir "${MESH_OUT_DIR}"
-    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/scripts/mesh_encode_obj.py" ${OBJ_ASSETS}
+            ${XBB_ASSET_ENCODE_ARGS}
+    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/scripts/mesh_encode_obj.py"
+            "${XBB_EMBED_COMMON_SCRIPT}"
+            "${XBB_ASSET_MODE_STAMP}"
+            ${OBJ_ASSETS}
     COMMENT "Encoding meshes..."
     VERBATIM
 )

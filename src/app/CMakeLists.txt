@@ -4,10 +4,6 @@ if(WIN32)
     list(APPEND APP_LIBS windowstuff)
 endif()
 
-if(NOT HAVE_CXX_EMBED)
-    list(APPEND APP_LIBS font_file)
-endif()
-
 add_library(app 
     ${CMAKE_CURRENT_SOURCE_DIR}/app.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/capture.cpp
@@ -16,6 +12,10 @@ add_library(app
     ${CMAKE_CURRENT_SOURCE_DIR}/ui.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/font.cpp
 )
+
+if(NOT HAVE_CXX_EMBED)
+    add_dependencies(app font_file)
+endif()
 
 target_link_libraries(app PRIVATE ${APP_LIBS})
 xbb_target_embed(app)

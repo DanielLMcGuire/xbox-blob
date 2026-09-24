@@ -23,11 +23,14 @@ add_library(scene
 
     ${CMAKE_CURRENT_SOURCE_DIR}/green_fog.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/green_fog.h
-
-    ${CMAKE_CURRENT_SOURCE_DIR}/tm_pixels.h
 )
 
-add_dependencies(scene mesh_generation)
-target_include_directories(scene PRIVATE "${MESH_OUT_DIR}")
+add_dependencies(scene mesh_generation texture_generation animation_generation)
+target_include_directories(scene PRIVATE
+    "${MESH_OUT_DIR}"
+    "${TEXTURE_OUT_DIR}"
+    "${ANIM_OUT_DIR}"
+    "${CMAKE_CURRENT_SOURCE_DIR}"
+)
 target_link_libraries(scene PRIVATE raylib)
 xbb_target_embed(scene)

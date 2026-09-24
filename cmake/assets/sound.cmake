@@ -8,7 +8,11 @@ add_custom_command(
     COMMAND Python3::Interpreter "${CMAKE_CURRENT_SOURCE_DIR}/scripts/sos_encode_sample.py"
             --wav-dir "${ASSETS_DIR}"
             --out-dir "${SOUND_OUT_DIR}"
-    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/scripts/sos_encode_sample.py" ${WAV_ASSETS}
+            ${XBB_ASSET_ENCODE_ARGS}
+    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/scripts/sos_encode_sample.py"
+            "${XBB_EMBED_COMMON_SCRIPT}"
+            "${XBB_ASSET_MODE_STAMP}"
+            ${WAV_ASSETS}
     COMMENT "Encoding audio..."
     VERBATIM
 )

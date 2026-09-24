@@ -4,6 +4,8 @@ import struct
 import wave
 from pathlib import Path
 
+from embed_common import add_embed_argument, embed_view_lines, write_bin, EMBED_PRELUDE, EMBED_EPILOGUE
+
 XOR_STEM_MAP = {
     "glock": True,
     "bubble": True,
@@ -64,12 +66,19 @@ def format_c_array_body(data: bytes) -> str:
         lines.append(line + "\r\n")
     return "".join(lines)
 
-def write_header(out_dir: Path, entries: list[tuple[str, str]]) -> Path:
+def write_header(out_dir: Path, entries: list[tuple[str, str]], embed: bool = False) -> Path:
     lines = ["#pragma once", ""]
+    if embed:
+        lines.append(EMBED_PRELUDE)
     for array_name, pcm_name in entries:
+        if embed:
+            lines += embed_view_lines("inline const", array_name, "unsigned char", pcm_name)
+            continue
         lines.append(f"inline constexpr unsigned char {array_name}[] = {{")
         lines.append(f'    #include "{pcm_name}"')
         lines.append("};")
+    if embed:
+        lines.append(EMBED_EPILOGUE)
     header_path = out_dir / HEADER_NAME
     header_path.write_text("\n".join(lines) + "\n")
     return header_path
@@ -91,6 +100,7 @@ def main():
     ap.add_argument("wavs", nargs="*", help="explicit .wav files to encode")
     ap.add_argument("--wav-dir")
     ap.add_argument("--out-dir", default="samples_out")
+    add_embed_argument(ap)
     xg = ap.add_mutually_exclusive_group()
     xg.add_argument("--xor", dest="xor", action="store_true", default=None,
                      help="force xor=True for all inputs given")
@@ -125,9 +135,13 @@ def main():
         values = read_mono_samples(wav_path)
         raw = to_raw_bytes(values, xor)
 
-        out_name = stem.upper() + ".pcm" if stem.lower() != "thunel16" else "THUNEL16.pcm"
+        ext = ".bin" if args.embed else ".pcm"
+        out_name = stem.upper() + ext
         out_path = out_dir / out_name
-        out_path.write_text(format_c_array_body(raw), newline="")
+        if args.embed:
+            write_bin(out_path, raw)
+        else:
+            out_path.write_text(format_c_array_body(raw), newline="")
 
         generated[stem.lower()] = out_name
 
@@ -137,7 +151,7 @@ def main():
         if stem in generated
     ]
     if len(header_entries) == len(ARRAY_NAME_MAP):
-        header_path = write_header(out_dir, header_entries)
+        header_path = write_header(out_dir, header_entries, args.embed)
     elif generated:
         print("skip: samples.h not (re)generated, missing "
               f"{sorted(set(ARRAY_NAME_MAP) - set(generated))}")
