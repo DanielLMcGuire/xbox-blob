@@ -1,10 +1,15 @@
 #include "app.h"
 #include "rlgl.h"
+#include "raylib.h"
 #include "imgui.h"
 #include "rlImGui.h"
 
 #include <algorithm>
 #include <cmath>
+#include <string>
+#include <vector>
+#include <cstdlib>
+#include <filesystem>
 
 #if defined(_WIN32)
     #undef DrawText
@@ -76,5 +81,5 @@ void XboxStartup::updateCapture()
 
     EndDrawing();
 
-    TakeScreenshot(TextFormat("frames/frame_%06d.tga", frameNumber++));
+    writeVideoFrame();
 }

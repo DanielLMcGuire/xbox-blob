@@ -34,6 +34,7 @@ cmake --build build
 | Short      | Long            | Description                                         |
 | ---------- | --------------- | --------------------------------------------------- |
 | `-c`       | `--capture`     | Render a capture to ./capture.mp4 (needs ffmpeg)    |
+| `-o`       | `--outfile`     | Capture file path (default: capture.mp4)            |
 | `-path`    | `--camera-path` | Choose camera path (0 to 3, -1 = random, 0 = stock) |
 | `-fs`      | `--fullscreen`  | Enter fullscreen on startup                         |
 | `-na`      | `--no-audio`    | Disable audio                                       |

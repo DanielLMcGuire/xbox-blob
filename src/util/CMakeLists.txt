@@ -12,3 +12,9 @@ if(WIN32)
     )
     target_link_libraries(windowstuff PRIVATE raylib)
 endif()
+
+add_library(process
+    ${CMAKE_CURRENT_SOURCE_DIR}/process.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/process.h
+)
+target_link_libraries(process PRIVATE raylib)

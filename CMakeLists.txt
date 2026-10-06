@@ -14,6 +14,8 @@ endif()
 
 include("cmake/Compiler/Compiler.cmake")
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
+
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 include("cmake/assets/assets.cmake")
 include("cmake/thirdparty/raylib.cmake")

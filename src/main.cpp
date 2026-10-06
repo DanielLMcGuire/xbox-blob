@@ -10,7 +10,8 @@ void emscripten_loop(void* arg)
 }
 #endif
 
-int main(int argc, char** argv) 
+#ifndef DLL_BUILD
+int main(int argc, char** argv)
 {
     XboxStartup app(argc, argv);
 
@@ -23,3 +24,12 @@ int main(int argc, char** argv)
 
     return 0;
 }
+#else
+void xbs_anim(int argc, char** argv)
+{
+    XboxStartup app(argc, argv);
+
+    while (app.isRunning()) 
+        app.update();
+}
+#endif

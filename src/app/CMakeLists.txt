@@ -1,4 +1,4 @@
-set(APP_LIBS raylib rlimgui scene shields sos sos_boot blob noclip)
+set(APP_LIBS raylib rlimgui scene shields sos sos_boot blob noclip process)
 
 if(WIN32)
     list(APPEND APP_LIBS windowstuff)
@@ -7,6 +7,7 @@ endif()
 add_library(app 
     ${CMAKE_CURRENT_SOURCE_DIR}/app.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/capture.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/encoder.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/core.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/interactive.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ui.cpp

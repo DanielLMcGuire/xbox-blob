@@ -1,7 +1,8 @@
 build
-blob*.mp4
-/frames
+*.mp4
+/.capture
 /build-web
 **/imgui.ini
 /build-linux
 __pycache__
+/build-uwp

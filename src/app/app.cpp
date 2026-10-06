@@ -31,7 +31,7 @@ XboxStartup::XboxStartup(int argc, char** argv)
         if (screenHeight == 0) screenHeight = 720;
         float distance = 45.0f;
 
-        std::filesystem::create_directories("frames");
+        std::filesystem::create_directories(".capture");
         if (msaaEnabled)
             SetConfigFlags(FLAG_MSAA_4X_HINT);
         InitWindow(screenWidth, screenHeight, "XBox Startup | Rendering...");
@@ -44,7 +44,8 @@ XboxStartup::XboxStartup(int argc, char** argv)
         if (width <= screenWidth || height <= screenHeight || fullscreen)
             Fullscreen::Toggle(width, height);
         camera = { { 0.0f, distance, -6.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, fov, CAMERA_PERSPECTIVE };
-        if (framerate == 0) framerate = 240; 
+        if (framerate == 0) framerate = 240;
+        startVideoCapture();
     }
     else
     {
@@ -105,12 +106,16 @@ XboxStartup::XboxStartup(int argc, char** argv)
 
 XboxStartup::~XboxStartup()
 {
-    if (captureMode && audio && driver)
-    {
-        if (!audio->exportWav("frames/audio.wav", driver->GetElapsedTime()))
+    if (captureMode) {
+        if (audio && driver)
         {
-            std::fputs("Failed to export WAV\n", stderr);
+            if (!audio->exportWav(".capture/audio.wav", driver->GetElapsedTime()))
+            {
+                std::fputs("Failed to export WAV\n", stderr);
+            }
         }
+        if (stopVideoCapture())
+            mergeAudioIntoVideo();
     }
     if (blob)
         delete blob;
@@ -178,11 +183,15 @@ void XboxStartup::parseArgs(int argc, char** argv)
         else if (arg == "-y") {
             if (i + 1 < argc) screenHeight = std::stoi(argv[++i]);
         }
+        else if (arg == "-o" || arg == "--outfile") {
+            outfile = argv[++i];
+        }
         else if (arg == "--help" || arg == "-h" || arg == "/?")
         {
             std::string program = std::filesystem::path(argv[0]).stem().string(); 
             std::puts(TextFormat("%s [OPTIONS...]\n\nOPTIONS:\n"
                         "  %s -c, --capture            Render a capture\n"
+                        "  %s -o, --outfile            Capture file path (default: capture.mp4)\n"
                         "  %s -path,--camera-path      Choose camera path (0-3, -1=random,0=stock)\n"
                         "  %s -fs, --fullscreen        Enter fullscreen on startup\n"
                         "  %s -na, --no-audio          Disable audio\n"

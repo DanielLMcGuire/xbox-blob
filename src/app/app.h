@@ -6,6 +6,7 @@
 #include "../util/qrand.h"
 #include "../util/noclip.h"
 #include "../util/toggle.h"
+#include "../util/process.h"
 
 #include "../blob/blob.h"
 #include "../blob/intensity_driver.h"
@@ -22,6 +23,7 @@
 #include <algorithm>
 #include <cmath>
 #include <string>
+#include <filesystem>
 
 class XboxStartup
 {
@@ -38,9 +40,15 @@ private:
 #endif
     void updateInteractive();
     void updateCapture();
+
     void updateUI();
     void renderShields(ShieldPass pass, float intensity);
     void createShields();
+
+    void writeVideoFrame();
+    void startVideoCapture();
+    bool stopVideoCapture();
+    void mergeAudioIntoVideo();
 
     Font loadFont();
 
@@ -91,4 +99,7 @@ private:
     int frameNumber = 0;
     bool running = true;
     float currentElapsedTime;
+
+    std::unique_ptr<ProcessPipe> ffmpegProcess;
+    std::filesystem::path outfile = "capture.mp4";
 };
