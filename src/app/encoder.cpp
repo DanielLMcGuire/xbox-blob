@@ -11,33 +11,26 @@ struct EncoderConfig {
     const char *options;
 };
 
-bool testFFmpeg(const std::string& encoder)
+bool testFFmpeg(const EncoderConfig& config)
 {
 #if defined(_WIN32)
     const char* ffmpegBin = "ffmpeg.exe";
 #else
     const char* ffmpegBin = "ffmpeg";
 #endif
-    char cmd[512];
-    snprintf(cmd, sizeof(cmd), "%s -hide_banner -encoders 2>&1", ffmpegBin);
+
+    char cmd[1024];
+    snprintf(
+        cmd, sizeof(cmd),
+        "%s -hide_banner -loglevel error -f lavfi -i nullsrc=s=256x256 -frames:v 1 -c:v %s %s -pix_fmt yuv420p -f null -",
+        ffmpegBin, config.name, config.options
+    );
 
     auto pipe = SpawnProcessPipe(cmd, true);
-    if (!pipe || !pipe->stream)
+    if (!pipe)
         return false;
 
-    std::string line;
-    bool found = false;
-    while (std::getline(*pipe->stream, line))
-    {
-        if (line.find(encoder) != std::string::npos)
-        {
-            found = true;
-            break;
-        }
-    }
-
-    pipe->waitAndClose();
-    return found;
+    return pipe->waitAndClose() == 0;
 }
 
 EncoderConfig selectBest()
@@ -50,9 +43,9 @@ EncoderConfig selectBest()
     };
     for (const auto& config : candidates)
     {
-        if (testFFmpeg(config.name))
+        if (testFFmpeg(config))
         {
-            TraceLog(LOG_INFO, "Hardware encoder detected: %s", config.name);
+            TraceLog(LOG_INFO, "Hardware encoder found: %s", config.name);
             return config;
         }
     }
