@@ -33,7 +33,7 @@ cmake --build build
 
 | Short      | Long            | Description                                         |
 | ---------- | --------------- | --------------------------------------------------- |
-| `-c`       | `--capture`     | Render a capture                                    |
+| `-c`       | `--capture`     | Render a capture to ./capture.mp4 (needs ffmpeg)    |
 | `-path`    | `--camera-path` | Choose camera path (0 to 3, -1 = random, 0 = stock) |
 | `-fs`      | `--fullscreen`  | Enter fullscreen on startup                         |
 | `-na`      | `--no-audio`    | Disable audio                                       |
@@ -44,14 +44,6 @@ cmake --build build
 | `-w`       | `--wireframe`   | Enable wireframe mode on startup                    |
 | `-sh`      | `--shields`     | Render the prototype shields (off by default)       |
 | `-s`       | `--seed`        | Set the RNG seed (hex, e.g. `0x76543210`)           |
-
-Captured frames and wavfile is recorded to `frames/`. To process it (which needs FFMPEG):
-
-```bash
-# ls ./scripts/ # list hw encoder variants
-./scripts/capture
-# output is at ./blob.mp4
-```
 
 ### UI
 
